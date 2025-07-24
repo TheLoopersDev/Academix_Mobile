@@ -7,25 +7,33 @@ import {
   TouchableOpacity,
   ListRenderItem,
 } from "react-native";
-import { styles } from "../../styles/CourseGridStyles"; // Import styles for CourseGrid
+import { styles } from "../../styles/CourseGridStyles"; // Đảm bảo đường dẫn đúng
 import Icon from "react-native-vector-icons/Ionicons";
-import { COURSES } from "../../data/mockData";
-import { useNavigation } from "@react-navigation/native"; // <-- Import useNavigation
+import { useNavigation } from "@react-navigation/native";
 
-type Course = (typeof COURSES)[0];
+// --- Định nghĩa kiểu dữ liệu mới, đơn giản và có thể tái sử dụng ---
+export type CourseCardData = {
+  id: string;
+  title: string;
+  imageUrl: string;
+  price: string;
+  rating: number;
+  instructor: string;
+  instructorAvatar: string;
+};
 
 interface CourseGridProps {
   title: string;
-  courses: Course[];
+  courses: CourseCardData[]; // <-- Sử dụng kiểu dữ liệu mới
 }
 
 export default function CourseGrid({ title, courses }: CourseGridProps) {
-  const navigation = useNavigation(); // <-- Lấy đối tượng navigation
+  const navigation = useNavigation();
 
-  const renderCourseItem: ListRenderItem<Course> = ({ item }) => (
+  const renderCourseItem: ListRenderItem<CourseCardData> = ({ item }) => (
     <TouchableOpacity
       style={styles.courseCard}
-      // Khi nhấn, điều hướng đến CourseDetail và truyền courseId
+      // Điều hướng đến CourseDetail, truyền courseId
       onPress={() => navigation.navigate("CourseDetail", { courseId: item.id })}
     >
       <Image source={{ uri: item.imageUrl }} style={styles.courseImage} />
@@ -59,7 +67,7 @@ export default function CourseGrid({ title, courses }: CourseGridProps) {
         renderItem={renderCourseItem}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        scrollEnabled={false}
+        scrollEnabled={false} // Tắt cuộn nếu được lồng trong ScrollView
       />
     </View>
   );

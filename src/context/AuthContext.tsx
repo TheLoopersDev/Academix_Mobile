@@ -13,6 +13,8 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  address?: string;
+  phoneNumber?: string;
   avatar?: { url: string };
 }
 
@@ -22,6 +24,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (newToken: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -85,8 +88,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const fetchUserInfo = async () => {
+    try {
+      const response = await getUserInfoApi();
+      if (response.data.success) {
+        setUser(response.data.user);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user info, logging out.", error);
+      await logout();
+    }
+  };
+
+  const refreshUser = async () => {
+    await fetchUserInfo();
+  };
   return (
-    <AuthContext.Provider value={{ token, user, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ token, user, isLoading, login, logout, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

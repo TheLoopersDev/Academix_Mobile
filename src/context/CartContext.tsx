@@ -85,8 +85,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const removeFromCart = async (courseId: string) => {
     try {
-      await removeFromCartApi(courseId);
-      await fetchCart();
+      const response = await removeFromCartApi(courseId);
+      if (response.data.success) {
+        await fetchCart();
+      }
     } catch (error) {
       Alert.alert("Lỗi", "Không thể xóa khóa học.");
     }

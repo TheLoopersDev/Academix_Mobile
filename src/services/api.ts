@@ -28,6 +28,8 @@ export const logoutUserApi = () => apiClient.get("/users/logout");
 export const getUserInfoApi = () => apiClient.get("/users/me");
 export const getInstructors = () => apiClient.get("/users/get-instructors");
 export const getCoursesApi = () => apiClient.get("/courses");
+export const getMyPurchasedCoursesApi = () =>
+  apiClient.get("/purchased/my-course");
 export const getCourseDetailApi = (courseId: string) =>
   apiClient.get(`/courses/course-data/${courseId}`);
 
@@ -37,9 +39,25 @@ export const addToCartApi = (courseId: string) =>
   apiClient.post("/cart/add-to-cart", { courseId });
 // Xóa khóa học khỏi giỏ
 export const removeFromCartApi = (courseId: string) =>
-  apiClient.delete(`/cart/remove/${courseId}`);
+  apiClient.delete("/cart/remove-item", { data: { courseId } });
 // Cập nhật số lượng
 export const updateCartQuantityApi = (courseId: string, quantity: number) =>
   apiClient.put("/cart/update-quantity", { courseId, quantity });
+
+export const updateUserInfoApi = (data: {
+  name: string;
+  address: string;
+  phoneNumber: string;
+}) => apiClient.put("/users/update-user", data);
+export const updateAvatarApi = (data: { avatar: string }) =>
+  apiClient.put("/users/update-avatar", data);
+export const getInstructorByIdApi = (id: string) =>
+  apiClient.get(`/users/${id}`);
+
+export const createPaymentLinkApi = (data: {
+  amount: number;
+  description: string;
+  courseIds: string[];
+}) => apiClient.post("/payment/create-payment-link", data);
 
 export default apiClient;

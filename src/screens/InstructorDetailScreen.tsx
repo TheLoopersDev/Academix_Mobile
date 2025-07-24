@@ -1,49 +1,130 @@
-import React from "react";
-import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
-import { INSTRUCTORS, COURSES } from "../data/mockData";
 import { styles } from "../styles/InstructorDetailStyles";
 import Icon from "react-native-vector-icons/Ionicons";
 import CourseGrid from "../components/home/CourseGrid";
+import { getInstructorByIdApi } from "../services/api";
 
-// --- Types ---
+// --- Định nghĩa kiểu dữ liệu ---
+type CourseSummary = {
+  _id: string;
+  name: string;
+  thumbnail: { url: string };
+  price: number;
+  rating?: number;
+};
+
+type Instructor = {
+  _id: string;
+  name: string;
+  profession?: string;
+  avatar?: { url: string };
+  introduce?: string;
+  rating?: number;
+  studentCount?: number;
+  uploadedCourses?: CourseSummary[];
+};
+
 type LectureStackParamList = {
   LectureList: undefined;
   InstructorDetail: { instructorId: string };
-  CourseDetail: { courseId: string }; // <-- Thêm CourseDetail
+  CourseDetail: { courseId: string };
 };
 type Props = StackScreenProps<LectureStackParamList, "InstructorDetail">;
 
 export default function InstructorDetailScreen({ route }: Props) {
   const { instructorId } = route.params;
-  const instructor = INSTRUCTORS.find((i) => i.id === instructorId);
-  const instructorCourses = COURSES.filter(
-    (c) => c.instructor === instructor?.name
-  );
+  const [instructor, setInstructor] = useState<Instructor | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInstructor = async () => {
+      try {
+        setLoading(true);
+        const response = await getInstructorByIdApi(instructorId);
+
+        if (response.data.success && response.data.data.user) {
+          setInstructor(response.data.data.user);
+        } else {
+          console.log("API success but no user data found in response.");
+        }
+      } catch (error) {
+        console.error("Failed to fetch instructor details:", error);
+        Alert.alert("Lỗi", "Không thể tải thông tin giảng viên.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInstructor();
+  }, [instructorId]);
+
+  if (loading) {
+    return (
+      <ActivityIndicator
+        size="large"
+        color="#3858F8"
+        style={{ flex: 1, justifyContent: "center" }}
+      />
+    );
+  }
 
   if (!instructor) {
     return (
-      <View>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Không tìm thấy giảng viên!</Text>
       </View>
     );
   }
 
+  // Chuyển đổi dữ liệu khóa học từ API để tương thích với CourseGrid
+  console.log("Fetched instructor data:", instructor.uploadedCourses);
+
+  const instructorCourses =
+    instructor.uploadedCourses?.map((course) => ({
+      id: course._id,
+      title: course.name,
+      imageUrl: course.thumbnail.url,
+      price: course.price
+        ? `${course.price.toLocaleString("vi-VN")} VNĐ`
+        : "Free",
+      rating: course.rating || 0,
+      instructor: instructor.name,
+      instructorAvatar: instructor.avatar?.url || "",
+    })) || [];
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Image source={{ uri: instructor.avatar }} style={styles.avatar} />
+        <Image
+          source={
+            instructor.avatar?.url
+              ? { uri: instructor.avatar.url }
+              : require("../assets/avatar-default.png")
+          }
+          style={styles.avatar}
+        />
         <Text style={styles.name}>{instructor.name}</Text>
-        <Text style={styles.title}>{instructor.title}</Text>
+        <Text style={styles.title}>
+          {instructor.profession || "Instructor"}
+        </Text>
 
         <View style={styles.statsContainer}>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>{instructor.rating}</Text>
+            <Text style={styles.statValue}>{instructor.rating || 0}</Text>
             <Text style={styles.statLabel}>Rating</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>
-              {instructor.studentCount.toLocaleString()}
+              {(instructor.studentCount || 0).toLocaleString()}
             </Text>
             <Text style={styles.statLabel}>Students</Text>
           </View>
@@ -68,7 +149,9 @@ export default function InstructorDetailScreen({ route }: Props) {
 
       <View style={styles.aboutContainer}>
         <Text style={styles.sectionTitle}>Về tôi</Text>
-        <Text style={styles.aboutText}>{instructor.aboutMe}</Text>
+        <Text style={styles.aboutText}>
+          {instructor.introduce || "Chưa có thông tin giới thiệu."}
+        </Text>
       </View>
 
       <View style={styles.coursesContainer}>

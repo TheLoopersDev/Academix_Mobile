@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -7,11 +7,14 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ActivityIndicator,
+  Linking, // <-- 1. Import Linking
+  Alert,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { styles } from "../styles/CartStyles";
 import { useCart, CartItem } from "../context/CartContext";
 import Icon from "react-native-vector-icons/Ionicons";
+import { createPaymentLinkApi } from "../services/api"; // <-- 2. Import hàm API
 
 const formatVND = (amount: number): string => {
   return `${amount.toLocaleString("vi-VN")} VNĐ`;
@@ -20,6 +23,7 @@ const formatVND = (amount: number): string => {
 export default function CartScreen() {
   const { cartItems, loading, fetchCart, removeFromCart, updateQuantity } =
     useCart();
+  const [isCheckingOut, setIsCheckingOut] = useState(false); // <-- 3. Thêm state loading cho checkout
 
   useFocusEffect(
     useCallback(() => {
@@ -31,8 +35,35 @@ export default function CartScreen() {
     (sum, item) => sum + (item.courseId.price || 0) * item.quantity,
     0
   );
-  const totalCost = subtotal;
+  const totalCost = subtotal; // Bỏ shipping fee nếu không cần
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  // --- 4. Thêm hàm xử lý thanh toán ---
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    try {
+      const courseIds = cartItems.map((item) => item.courseId._id);
+      const response = await createPaymentLinkApi({
+        amount: totalCost,
+        description: "Thanh toan khoa hoc", // Mô tả ngắn gọn
+        courseIds: courseIds,
+      });
+
+      if (response.data.checkoutUrl) {
+        // Mở link thanh toán bằng trình duyệt
+        await Linking.openURL(response.data.checkoutUrl);
+      } else {
+        throw new Error("Không nhận được link thanh toán.");
+      }
+    } catch (error) {
+      console.error("Failed to create payment link:", error);
+      Alert.alert("Lỗi", "Không thể tạo yêu cầu thanh toán. Vui lòng thử lại.");
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
+  console.log("Cart Items:", cartItems);
 
   const renderCartItem = ({ item }: { item: CartItem }) => (
     <View style={styles.cartItemContainer}>
@@ -45,7 +76,6 @@ export default function CartScreen() {
           <Text style={styles.itemName} numberOfLines={2}>
             {item.courseId.name}
           </Text>
-          {/* Sửa lỗi ở đây: Thêm optional chaining và fallback text */}
           <Text style={styles.itemAuthor}>
             By {item.courseId.author?.name || "Unknown Author"}
           </Text>
@@ -106,6 +136,7 @@ export default function CartScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        <Text style={styles.headerTitle}>Giỏ hàng</Text>
         <Text style={styles.headerSubtitle}>{totalItems} khóa học</Text>
       </View>
       <FlatList
@@ -119,13 +150,20 @@ export default function CartScreen() {
           <Text style={styles.summaryLabel}>Tạm tính</Text>
           <Text style={styles.summaryValue}>{formatVND(subtotal)}</Text>
         </View>
-
         <View style={[styles.summaryRow, styles.totalRow]}>
           <Text style={styles.totalLabel}>Tổng cộng</Text>
           <Text style={styles.totalValue}>{formatVND(totalCost)}</Text>
         </View>
-        <TouchableOpacity style={styles.checkoutButton}>
-          <Text style={styles.checkoutButtonText}>Tiến hành thanh toán</Text>
+        <TouchableOpacity
+          style={styles.checkoutButton}
+          onPress={handleCheckout}
+          disabled={isCheckingOut}
+        >
+          {isCheckingOut ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.checkoutButtonText}>Tiến hành thanh toán</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

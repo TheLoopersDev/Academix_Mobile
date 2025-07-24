@@ -10,7 +10,7 @@ import { NavigationContainer } from "@react-navigation/native";
 // Import các màn hình
 import HomeScreen from "../screens/HomeScreen";
 import CoursesListScreen from "../screens/CoursesListScreen";
-import LectureListScreen from "../screens/LectureListScreen";
+import LectureListScreen from "../screens/InstructorsListScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import CourseDetailScreen from "../screens/CourseDetailScreen";
 import InstructorDetailScreen from "../screens/InstructorDetailScreen";
@@ -84,7 +84,7 @@ function CoursesStack() {
       <CoursesStackNavigator.Screen
         name="CoursesList"
         component={CoursesListScreen}
-        options={{ headerShown: false }}
+        options={{ title: "Danh sách Khóa học" }}
       />
       <CoursesStackNavigator.Screen
         name="CourseDetail"
@@ -167,16 +167,8 @@ function MainFlow() {
       <MainTab.Screen name="Home" component={HomeStack} />
       <MainTab.Screen name="Courses" component={CoursesStack} />
       <MainTab.Screen name="Lectures" component={LecturesStack} />
-      <MainTab.Screen
-        name="Cart"
-        component={CartScreen}
-        options={{ headerShown: true, title: "Giỏ hàng" }}
-      />
-      <MainTab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ headerShown: true, title: "Hồ sơ" }}
-      />
+      <MainTab.Screen name="Cart" component={CartScreen} />
+      <MainTab.Screen name="Profile" component={ProfileScreen} />
     </MainTab.Navigator>
   );
 }
