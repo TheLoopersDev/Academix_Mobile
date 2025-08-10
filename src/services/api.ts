@@ -11,7 +11,6 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem("access_token");
-    console.log("Current token:", token);
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -27,9 +26,11 @@ export const loginUserApi = (data: { email: string; password: string }) =>
 export const logoutUserApi = () => apiClient.get("/users/logout");
 export const getUserInfoApi = () => apiClient.get("/users/me");
 export const getInstructors = () => apiClient.get("/users/get-instructors");
-export const getCoursesApi = () => apiClient.get("/courses");
+export const getCoursesApi = (params = {}) => {
+  return apiClient.get("/courses/pagination", { params });
+};
 export const getMyPurchasedCoursesApi = () =>
-  apiClient.get("/purchased/my-course");
+  apiClient.get("/courses/purchased/my-course");
 export const getCourseDetailApi = (courseId: string) =>
   apiClient.get(`/courses/course-data/${courseId}`);
 
@@ -59,5 +60,40 @@ export const createPaymentLinkApi = (data: {
   description: string;
   courseIds: string[];
 }) => apiClient.post("/payment/create-payment-link", data);
+
+export const updateLessonCompletionStatusApi = (
+  courseId: string,
+  lessonId: string,
+  isCompleted: boolean
+) => {
+  return apiClient.put(`/progress/update-lesson-completion/${courseId}`, {
+    lessonId,
+    isCompleted,
+  });
+};
+
+// Hàm đăng ký người dùng đã được sửa để dùng apiClient
+export const registrationUserApi = (
+  name: string,
+  email: string,
+  password: string
+) => {
+  // Sử dụng apiClient.post và đường dẫn tương đối
+  return apiClient.post("users/register", { name, email, password });
+};
+
+// Hàm kích hoạt tài khoản đã được sửa để dùng apiClient
+export const activateUserApi = (
+  activation_token: string,
+  activation_code: string
+) => {
+  // Sử dụng apiClient.post và đường dẫn tương đối
+  return apiClient.post("users/activate-user", {
+    activation_token,
+    activation_code,
+  });
+};
+
+export const getTopCoursesApi = () => apiClient.get("/courses/top-courses");
 
 export default apiClient;

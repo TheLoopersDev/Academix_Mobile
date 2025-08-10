@@ -15,7 +15,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { getCourseDetailApi } from "../services/api";
 import { useCart } from "@/context/CartContext";
 
-// --- Định nghĩa kiểu dữ liệu chi tiết cho Khóa học ---
+// --- Detailed data types for Course ---
 type Lesson = {
   _id: string;
   title: string;
@@ -51,7 +51,7 @@ type CourseDetail = {
   publisher: Publisher;
 };
 
-// --- Types cho Navigation ---
+// --- Navigation Types ---
 type CoursesStackParamList = {
   CoursesList: undefined;
   CourseDetail: { courseId: string };
@@ -79,7 +79,7 @@ const CourseContentSection = ({
           <Text style={styles.accordionTitle}>{section.title}</Text>
           <Text
             style={styles.accordionMeta}
-          >{`${totalLectures} Bài giảng`}</Text>
+          >{`${totalLectures} Lectures`}</Text>
         </View>
         <Icon
           name={isExpanded ? "chevron-up-outline" : "chevron-down-outline"}
@@ -99,7 +99,7 @@ const CourseContentSection = ({
               <View style={styles.lectureMeta}>
                 {lesson.isFree && (
                   <View style={styles.previewTag}>
-                    <Text style={styles.previewText}>Xem trước</Text>
+                    <Text style={styles.previewText}>Preview</Text>
                   </View>
                 )}
                 <Text style={styles.durationText}>{lesson.duration}</Text>
@@ -129,7 +129,7 @@ export default function CourseDetailScreen({ route }: Props) {
         }
       } catch (error) {
         console.error("Failed to fetch course detail:", error);
-        Alert.alert("Lỗi", "Không thể tải chi tiết khóa học.");
+        Alert.alert("Error", "Failed to load course details.");
       } finally {
         setLoading(false);
       }
@@ -150,7 +150,7 @@ export default function CourseDetailScreen({ route }: Props) {
   if (!course) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Không tìm thấy khóa học!</Text>
+        <Text>Course not found!</Text>
       </View>
     );
   }
@@ -183,28 +183,28 @@ export default function CourseDetailScreen({ route }: Props) {
           <View style={styles.statsContainer}>
             <View style={styles.statBox}>
               <Text style={styles.statValue}>{course.totalLessons}</Text>
-              <Text style={styles.statLabel}>Bài học</Text>
+              <Text style={styles.statLabel}>Lessons</Text>
             </View>
             <View style={styles.statBox}>
               <Text style={styles.statValue}>{course.durationText}</Text>
-              <Text style={styles.statLabel}>Thời lượng</Text>
+              <Text style={styles.statLabel}>Duration</Text>
             </View>
             <View style={styles.statBox}>
               <Text style={styles.statValue}>{course.level}</Text>
-              <Text style={styles.statLabel}>Cấp độ</Text>
+              <Text style={styles.statLabel}>Level</Text>
             </View>
             <View style={styles.statBox}>
               <Text style={styles.statValue}>
                 {course.purchased.toLocaleString()}
               </Text>
-              <Text style={styles.statLabel}>Học viên</Text>
+              <Text style={styles.statLabel}>Students</Text>
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>Mô tả</Text>
+          <Text style={styles.sectionTitle}>Description</Text>
           <Text style={styles.description}>{course.description}</Text>
 
-          <Text style={styles.sectionTitle}>Khóa học bao gồm</Text>
+          <Text style={styles.sectionTitle}>What you'll learn</Text>
           {course.topics.map((item, index) => (
             <View key={index} style={styles.includeItem}>
               <Icon name="checkmark-circle-outline" size={18} color="#3858F8" />
@@ -213,7 +213,7 @@ export default function CourseDetailScreen({ route }: Props) {
           ))}
 
           <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
-            Nội dung khóa học
+            Course Content
           </Text>
           {course.sections.map((section, index) => (
             <CourseContentSection
@@ -229,17 +229,17 @@ export default function CourseDetailScreen({ route }: Props) {
       <View style={styles.fabContainer}>
         <View style={styles.priceContainer}>
           <Text style={styles.originalPrice}>
-            {course.estimatedPrice.toLocaleString("vi-VN")} VNĐ
+            {course.estimatedPrice.toLocaleString("vi-VN")} VND
           </Text>
           <Text style={styles.discountedPrice}>
-            {course.price.toLocaleString("vi-VN")} VNĐ
+            {course.price.toLocaleString("vi-VN")} VND
           </Text>
         </View>
         <TouchableOpacity
           style={styles.addToCartButton}
-          onPress={() => addToCart(course._id)} // <-- Thêm sự kiện onPress
+          onPress={() => addToCart(course._id)} // Add onPress event
         >
-          <Text style={styles.addToCartText}>Thêm vào giỏ</Text>
+          <Text style={styles.addToCartText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
     </>

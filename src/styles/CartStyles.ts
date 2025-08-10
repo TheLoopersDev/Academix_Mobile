@@ -14,8 +14,9 @@ export const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
+    paddingBottom: 20,
+    fontSize: 20,
+    fontWeight: "semibold",
   },
   headerSubtitle: {
     fontSize: 14,

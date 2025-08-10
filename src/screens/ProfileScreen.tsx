@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { INSTRUCTORS } from "../data/mockData"; // Dùng cho tab Giảng viên
+// import { INSTRUCTORS } from "../../data/mockData"; // Removed as Instructors tab was deleted
 import { styles } from "../styles/ProfileStyles";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useAuth, User } from "../context/AuthContext";
@@ -21,17 +21,48 @@ import {
   updateAvatarApi,
   getMyPurchasedCoursesApi,
 } from "../services/api";
+import { useNavigation, NavigationProp } from "@react-navigation/native"; // Only import useNavigation and NavigationProp
+import { StackNavigationProp } from "@react-navigation/stack";
+import {
+  BottomTabNavigationProp,
+  BottomTabScreenProps,
+} from "@react-navigation/bottom-tabs"; // Import BottomTabScreenProps
 
-// --- Định nghĩa kiểu dữ liệu ---
-//Purchase courses mới
+// --- Data type definitions ---
+// Redefine CoursesStackParamList (must match AppNavigator.tsx)
+type CoursesStackParamList = {
+  CoursesList: undefined;
+  CourseDetail: { courseId: string };
+  WatchCourse: { courseId: string };
+};
+
+// Redefine MainTabParamList (must match AppNavigator.tsx)
+type MainTabParamList = {
+  Home: undefined;
+  Courses: CoursesStackParamList; // Courses tab will contain CoursesStack
+  Lectures: undefined; // Keep Lectures in MainTabParamList if it still exists elsewhere in the app
+  Cart: undefined;
+  Profile: undefined;
+};
+
+// Props type for ProfileScreen (a screen of BottomTabNavigator)
+type ProfileScreenProps = BottomTabScreenProps<MainTabParamList, "Profile">;
+
+// Navigation type for MyCoursesTab, received from ProfileScreen
+type MyCoursesTabNavigationProp = BottomTabNavigationProp<
+  MainTabParamList,
+  "Profile"
+>;
+
+// New purchased courses
 type PurchasedCourse = {
   _id: string;
   name: string;
   thumbnail: { url: string };
   authorId: { name: string };
-  progress?: number; // Thêm progress giả để hiển thị
+  progress?: number; // Add mock progress for display
 };
-type InstructorType = (typeof INSTRUCTORS)[0];
+// type InstructorType = (typeof INSTRUCTORS)[0]; // Removed as Instructors tab was deleted
 
 type ProfileMenuItemProps = {
   icon: string;
@@ -39,7 +70,7 @@ type ProfileMenuItemProps = {
   onPress: () => void;
 };
 
-// --- Component cho menu item ---
+// --- Component for menu item ---
 const ProfileMenuItem = ({ icon, text, onPress }: ProfileMenuItemProps) => (
   <TouchableOpacity style={styles.menuItem} onPress={onPress}>
     <Icon name={icon} size={22} color="#c0392b" />
@@ -52,7 +83,7 @@ type EditInfoTabProps = {
   onLogoutPress: () => void;
 };
 
-// --- Các component con cho các tab ---
+// --- Child components for tabs ---
 const EditInfoTab = ({ user, onLogoutPress }: EditInfoTabProps) => {
   const [name, setName] = useState(user.name);
   const [address, setAddress] = useState(user.address || "");
@@ -66,10 +97,10 @@ const EditInfoTab = ({ user, onLogoutPress }: EditInfoTabProps) => {
       const response = await updateUserInfoApi({ name, address, phoneNumber });
       if (response.data.success) {
         await refreshUser();
-        Alert.alert("Thành công", "Đã cập nhật thông tin hồ sơ.");
+        Alert.alert("Success", "Profile information has been updated.");
       }
     } catch (error) {
-      Alert.alert("Lỗi", "Không thể cập nhật thông tin.");
+      Alert.alert("Error", "Could not update information.");
     } finally {
       setLoading(false);
     }
@@ -78,7 +109,7 @@ const EditInfoTab = ({ user, onLogoutPress }: EditInfoTabProps) => {
   return (
     <View style={styles.contentContainer}>
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Họ và tên</Text>
+        <Text style={styles.label}>Full name</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} />
       </View>
       <View style={styles.formGroup}>
@@ -86,7 +117,7 @@ const EditInfoTab = ({ user, onLogoutPress }: EditInfoTabProps) => {
         <TextInput style={styles.input} value={user.email} editable={false} />
       </View>
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Số điện thoại</Text>
+        <Text style={styles.label}>Phone number</Text>
         <TextInput
           style={styles.input}
           value={phoneNumber}
@@ -95,7 +126,7 @@ const EditInfoTab = ({ user, onLogoutPress }: EditInfoTabProps) => {
         />
       </View>
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Địa chỉ</Text>
+        <Text style={styles.label}>Address</Text>
         <TextInput
           style={styles.input}
           value={address}
@@ -110,13 +141,13 @@ const EditInfoTab = ({ user, onLogoutPress }: EditInfoTabProps) => {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.saveButtonText}>Lưu thay đổi</Text>
+          <Text style={styles.saveButtonText}>Save changes</Text>
         )}
       </TouchableOpacity>
       <View style={{ marginTop: 24 }}>
         <ProfileMenuItem
           icon="log-out-outline"
-          text="Đăng xuất"
+          text="Logout"
           onPress={onLogoutPress}
         />
       </View>
@@ -124,12 +155,13 @@ const EditInfoTab = ({ user, onLogoutPress }: EditInfoTabProps) => {
   );
 };
 
-//Purchase courses mới: Component cho tab "Khóa học của tôi"
+// New purchased courses: Component for the "My Courses" tab
 type MyCoursesTabProps = {
   HeaderAndTabs: React.ReactElement;
+  navigation: MyCoursesTabNavigationProp; // Receive navigation prop
 };
 
-const MyCoursesTab = ({ HeaderAndTabs }: MyCoursesTabProps) => {
+const MyCoursesTab = ({ HeaderAndTabs, navigation }: MyCoursesTabProps) => {
   const [myCourses, setMyCourses] = useState<PurchasedCourse[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -138,18 +170,28 @@ const MyCoursesTab = ({ HeaderAndTabs }: MyCoursesTabProps) => {
       try {
         setLoading(true);
         const response = await getMyPurchasedCoursesApi();
+        console.log("dsada", response.data);
+
         if (response.data.success) {
-          const coursesWithProgress = response.data.data.course.map(
+          // Cập nhật cách lấy danh sách khóa học
+          // Truy cập trực tiếp response.data.data, nếu nó không phải là mảng thì mặc định là []
+          const purchasedCourses = Array.isArray(response.data.data)
+            ? response.data.data
+            : [];
+          const coursesWithProgress = purchasedCourses.map(
             (c: PurchasedCourse) => ({
               ...c,
               progress: Math.floor(Math.random() * 100),
             })
           );
           setMyCourses(coursesWithProgress);
+        } else {
+          setMyCourses([]);
         }
       } catch (error) {
         console.error("Failed to fetch purchased courses:", error);
-        Alert.alert("Lỗi", "Không thể tải danh sách khóa học đã mua.");
+        Alert.alert("Error", "Could not load the list of purchased courses.");
+        setMyCourses([]);
       } finally {
         setLoading(false);
       }
@@ -157,8 +199,20 @@ const MyCoursesTab = ({ HeaderAndTabs }: MyCoursesTabProps) => {
     fetchMyCourses();
   }, []);
 
+  const handleCoursePress = (courseId: string) => {
+    // Navigate to WatchCourseScreen via the "Courses" tab
+    // navigate('Courses', ...) is the standard syntax for navigating between tabs and nested stacks
+    navigation.navigate("Courses", {
+      screen: "WatchCourse",
+      params: { courseId },
+    });
+  };
+
   const renderCourseItem: ListRenderItem<PurchasedCourse> = ({ item }) => (
-    <TouchableOpacity style={styles.courseCard}>
+    <TouchableOpacity
+      style={styles.courseCard}
+      onPress={() => handleCoursePress(item._id)}
+    >
       <Image source={{ uri: item.thumbnail.url }} style={styles.courseImage} />
       <View style={styles.courseInfo}>
         <Text style={styles.courseTitle} numberOfLines={2}>
@@ -199,12 +253,10 @@ const MyCoursesTab = ({ HeaderAndTabs }: MyCoursesTabProps) => {
       ListHeaderComponent={HeaderAndTabs}
       contentContainerStyle={styles.listContainer}
       ListEmptyComponent={() => (
-        // Sửa lỗi ở đây: Không render lại HeaderAndTabs
         <View style={{ alignItems: "center", marginTop: 50 }}>
-          <Text>Bạn chưa mua khóa học nào.</Text>
+          <Text>You have not purchased any courses yet.</Text>
         </View>
       )}
-      // Thêm một View bao bọc FlatList để xử lý trường hợp loading
       ListFooterComponent={
         loading ? (
           <ActivityIndicator
@@ -218,40 +270,16 @@ const MyCoursesTab = ({ HeaderAndTabs }: MyCoursesTabProps) => {
   );
 };
 
-const renderInstructorItem: ListRenderItem<InstructorType> = ({ item }) => (
-  <View style={styles.instructorCard}>
-    <Image source={{ uri: item.avatar }} style={styles.instructorAvatar} />
-    <Text style={styles.instructorName}>{item.name}</Text>
-    <Text style={styles.instructorTitle}>{item.title}</Text>
-    <View style={styles.statsContainer}>
-      <View style={styles.stat}>
-        <Icon name="star" size={14} color="#f5b324" />
-        <Text style={styles.statText}> {item.rating}</Text>
-      </View>
-      <View style={styles.stat}>
-        <Text style={styles.statText}>{item.studentCount}</Text>
-        <Text style={styles.statLabel}>Students</Text>
-      </View>
-    </View>
-    <View style={styles.buttonContainer}>
-      <TouchableOpacity style={[styles.button, styles.secondaryButton]}>
-        <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-          Profile
-        </Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-);
-
-// --- Component chính ---
-export default function ProfileScreen() {
+// --- Main component ---
+export default function ProfileScreen({ navigation }: ProfileScreenProps) {
+  // Receive navigation prop
   const [activeTab, setActiveTab] = useState("info");
   const { user, logout, refreshUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
 
   const handleLogout = () => {
-    Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất?", [
-      { text: "Hủy", style: "cancel" },
+    Alert.alert("Logout", "Are you sure you want to log out?", [
+      { text: "Cancel", style: "cancel" },
       { text: "OK", onPress: () => logout() },
     ]);
   };
@@ -259,9 +287,7 @@ export default function ProfileScreen() {
   const handlePickAvatar = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Xin lỗi, chúng tôi cần quyền truy cập thư viện ảnh để thực hiện việc này!"
-      );
+      Alert.alert("Sorry, we need camera roll permissions to make this work!");
       return;
     }
 
@@ -280,10 +306,10 @@ export default function ProfileScreen() {
         const response = await updateAvatarApi({ avatar: base64Image });
         if (response.data.success) {
           await refreshUser();
-          Alert.alert("Thành công", "Đã cập nhật ảnh đại diện.");
+          Alert.alert("Success", "Profile picture has been updated.");
         }
       } catch (error) {
-        Alert.alert("Lỗi", "Không thể cập nhật ảnh đại diện.");
+        Alert.alert("Error", "Could not update profile picture.");
       } finally {
         setIsUploading(false);
       }
@@ -324,7 +350,7 @@ export default function ProfileScreen() {
           {user.role === "instructor" ? "Instructor" : "Student"}
         </Text>
         <TouchableOpacity style={styles.editButton} onPress={handlePickAvatar}>
-          <Text style={styles.editButtonText}>Chỉnh sửa ảnh</Text>
+          <Text style={styles.editButtonText}>Edit avatar</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.tabContainer}>
@@ -360,7 +386,8 @@ export default function ProfileScreen() {
             My Courses
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* Removed "My Instructors" tab */}
+        {/* <TouchableOpacity
           style={[
             styles.tabButton,
             activeTab === "instructors" && styles.tabButtonActive,
@@ -375,28 +402,30 @@ export default function ProfileScreen() {
           >
             My Instructors
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </>
   );
 
   const renderContent = () => {
     switch (activeTab) {
-      //Purchase courses mới
       case "courses":
-        return <MyCoursesTab HeaderAndTabs={HeaderAndTabs} />;
-      case "instructors":
         return (
-          <FlatList
-            key="instructors-list"
-            data={INSTRUCTORS}
-            renderItem={renderInstructorItem}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            ListHeaderComponent={HeaderAndTabs}
-            contentContainerStyle={styles.instructorListContainer}
-          />
-        );
+          <MyCoursesTab HeaderAndTabs={HeaderAndTabs} navigation={navigation} />
+        ); // Pass navigation prop
+      // Removed "instructors" case
+      // case "instructors":
+      //   return (
+      //     <FlatList
+      //       key="instructors-list"
+      //       data={INSTRUCTORS}
+      //       renderItem={renderInstructorItem}
+      //       keyExtractor={(item) => item.id}
+      //       numColumns={2}
+      //       ListHeaderComponent={HeaderAndTabs}
+      //       contentContainerStyle={styles.instructorListContainer}
+      //     />
+      //   );
       case "info":
       default:
         return (

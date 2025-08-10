@@ -16,6 +16,7 @@ export interface User {
   address?: string;
   phoneNumber?: string;
   avatar?: { url: string };
+  purchasedCourses?: string[]; // Mảng chứa ID của các khóa học đã mua
 }
 
 interface AuthContextType {

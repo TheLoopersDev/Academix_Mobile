@@ -14,4 +14,7 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 16,
   },
+  disabledButton: {
+    backgroundColor: "#9ca3af",
+  },
 });

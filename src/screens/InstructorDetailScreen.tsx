@@ -80,7 +80,7 @@ export default function InstructorDetailScreen({ route }: Props) {
   if (!instructor) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Không tìm thấy giảng viên!</Text>
+        <Text>Not found instructors</Text>
       </View>
     );
   }
@@ -148,7 +148,7 @@ export default function InstructorDetailScreen({ route }: Props) {
       </View>
 
       <View style={styles.aboutContainer}>
-        <Text style={styles.sectionTitle}>Về tôi</Text>
+        <Text style={styles.sectionTitle}>About me</Text>
         <Text style={styles.aboutText}>
           {instructor.introduce || "Chưa có thông tin giới thiệu."}
         </Text>

@@ -7,10 +7,10 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Icon from "react-native-vector-icons/Ionicons";
 import { NavigationContainer } from "@react-navigation/native";
 
-// Import các màn hình
+// Import screens
 import HomeScreen from "../screens/HomeScreen";
 import CoursesListScreen from "../screens/CoursesListScreen";
-import LectureListScreen from "../screens/InstructorsListScreen";
+import InstructorsListScreen from "../screens/InstructorsListScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import CourseDetailScreen from "../screens/CourseDetailScreen";
 import InstructorDetailScreen from "../screens/InstructorDetailScreen";
@@ -18,11 +18,12 @@ import LoginScreen from "../screens/auth/LoginScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import ForgotPasswordScreen from "../screens/auth/ForgotPasswordScreen";
 import VerifyCodeScreen from "../screens/auth/VerifyCodeScreen";
-import CartScreen from "../screens/CartScreen"; // <-- Import CartScreen
+import CartScreen from "../screens/CartScreen"; // Import CartScreen
 import { useAuth } from "../context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
+import WatchCourseScreen from "@/screens/watch-course/WatchCourseScreen";
 
-// --- Định nghĩa kiểu dữ liệu ---
+// --- Define data types ---
 type AuthStackParamList = {
   Login: undefined;
   SignUp: undefined;
@@ -38,6 +39,7 @@ type HomeStackParamList = {
 type CoursesStackParamList = {
   CoursesList: undefined;
   CourseDetail: { courseId: string };
+  WatchCourse: { courseId: string };
 };
 
 type LectureStackParamList = {
@@ -50,7 +52,7 @@ type MainTabParamList = {
   Home: undefined;
   Courses: undefined;
   Lectures: undefined;
-  Cart: undefined; // <-- Thêm Cart vào đây
+  Cart: undefined; // Add Cart here
   Profile: undefined;
 };
 
@@ -60,7 +62,7 @@ const HomeStackNavigator = createStackNavigator<HomeStackParamList>();
 const CoursesStackNavigator = createStackNavigator<CoursesStackParamList>();
 const LectureStackNavigator = createStackNavigator<LectureStackParamList>();
 
-// --- Các Stack con ---
+// --- Child Stacks ---
 function HomeStack() {
   return (
     <HomeStackNavigator.Navigator>
@@ -72,7 +74,7 @@ function HomeStack() {
       <HomeStackNavigator.Screen
         name="CourseDetail"
         component={CourseDetailScreen}
-        options={{ title: "Chi tiết Khóa học" }}
+        options={{ title: "Course Detail" }}
       />
     </HomeStackNavigator.Navigator>
   );
@@ -80,16 +82,21 @@ function HomeStack() {
 
 function CoursesStack() {
   return (
-    <CoursesStackNavigator.Navigator>
+    <CoursesStackNavigator.Navigator screenOptions={{ headerShown: false }}>
       <CoursesStackNavigator.Screen
         name="CoursesList"
         component={CoursesListScreen}
-        options={{ title: "Danh sách Khóa học" }}
+        options={{ headerShown: false }}
       />
       <CoursesStackNavigator.Screen
         name="CourseDetail"
         component={CourseDetailScreen}
-        options={{ title: "Chi tiết Khóa học" }}
+        options={{ title: "Course Detail" }}
+      />
+      <CoursesStackNavigator.Screen // Add WatchCourseScreen to stack
+        name="WatchCourse"
+        component={WatchCourseScreen}
+        options={{ title: "Watch Course" }}
       />
     </CoursesStackNavigator.Navigator>
   );
@@ -97,27 +104,27 @@ function CoursesStack() {
 
 function LecturesStack() {
   return (
-    <LectureStackNavigator.Navigator>
+    <LectureStackNavigator.Navigator screenOptions={{ headerShown: false }}>
       <LectureStackNavigator.Screen
         name="LectureList"
-        component={LectureListScreen}
-        options={{ title: "Danh sách Giảng viên" }}
+        component={InstructorsListScreen}
+        options={{ title: "Instructors List" }}
       />
       <LectureStackNavigator.Screen
         name="InstructorDetail"
         component={InstructorDetailScreen}
-        options={{ title: "Chi tiết Giảng viên" }}
+        options={{ title: "Instructor Detail" }}
       />
       <LectureStackNavigator.Screen
         name="CourseDetail"
         component={CourseDetailScreen}
-        options={{ title: "Chi tiết Khóa học" }}
+        options={{ title: "Course Detail" }}
       />
     </LectureStackNavigator.Navigator>
   );
 }
 
-// --- Các luồng chính ---
+// --- Main flows ---
 function AuthFlow() {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
@@ -153,7 +160,7 @@ function MainFlow() {
           else if (route.name === "Lectures")
             iconName = focused ? "people" : "people-outline";
           else if (route.name === "Cart")
-            // <-- Thêm logic cho icon Cart
+            // Add logic for Cart icon
             iconName = focused ? "cart" : "cart-outline";
           else if (route.name === "Profile")
             iconName = focused ? "person" : "person-outline";
@@ -173,7 +180,7 @@ function MainFlow() {
   );
 }
 
-// --- Navigator gốc ---
+// --- Root Navigator ---
 export default function AppNavigator() {
   const { token, isLoading } = useAuth();
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,15 +6,46 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ImageBackground,
+  Alert,
 } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { styles } from "../../styles/auth/VerifyCodeStyles";
+import Icon from "react-native-vector-icons/Ionicons";
 
-type AuthStackParamList = { VerifyCode: { email: string } };
+// Import API service
+import { activateUserApi } from "../../services/api";
+
+type AuthStackParamList = {
+  Login: undefined;
+  SignUp: undefined;
+  VerifyCode: { email: string; activationToken: string };
+};
 type Props = StackScreenProps<AuthStackParamList, "VerifyCode">;
 
-export default function VerifyCodeScreen({ route }: Props) {
-  const { email } = route.params;
+export default function VerifyCodeScreen({ route, navigation }: Props) {
+  const { email, activationToken } = route.params;
+  const [activationCode, setActivationCode] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleVerifyCode = async () => {
+    if (activationCode.length !== 4) {
+      // Assuming the code is 4 digits long
+      Alert.alert("Error", "Invalid verification code.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await activateUserApi(activationToken, activationCode);
+      Alert.alert("Success", "Your account has been activated!");
+      navigation.navigate("Login");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Account activation failed.";
+      Alert.alert("Error", errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -24,44 +55,32 @@ export default function VerifyCodeScreen({ route }: Props) {
         resizeMode="cover"
       >
         <View style={styles.overlay} />
-        <View
-          style={[styles.formContainer, { justifyContent: "center", flex: 1 }]}
-        >
-          <Text style={styles.title}>Xác thực mã</Text>
+        <View style={styles.formContainer}>
+          <Text style={styles.title}>Verify your account</Text>
           <Text style={styles.subtitle}>
-            Mã xác thực đã được gửi đến {email}
+            Please enter the code sent to {"\n"}
+            <Text style={styles.emailText}>{email}</Text>
           </Text>
-          <View style={styles.codeInputContainer}>
+          <View style={styles.inputContainer}>
+            <Icon name="key-outline" size={20} color="#888" />
             <TextInput
-              style={styles.codeInput}
-              maxLength={1}
+              style={styles.input}
+              placeholder="Verification Code"
               keyboardType="number-pad"
-            />
-            <TextInput
-              style={styles.codeInput}
-              maxLength={1}
-              keyboardType="number-pad"
-            />
-            <TextInput
-              style={styles.codeInput}
-              maxLength={1}
-              keyboardType="number-pad"
-            />
-            <TextInput
-              style={styles.codeInput}
-              maxLength={1}
-              keyboardType="number-pad"
+              value={activationCode}
+              onChangeText={setActivationCode}
+              maxLength={4}
             />
           </View>
-          <TouchableOpacity style={styles.loginButton}>
-            <Text style={styles.loginButtonText}>Xác nhận</Text>
+          <TouchableOpacity
+            style={[styles.loginButton, loading && styles.disabledButton]}
+            onPress={handleVerifyCode}
+            disabled={loading}
+          >
+            <Text style={styles.loginButtonText}>
+              {loading ? "Verifying..." : "Verify"}
+            </Text>
           </TouchableOpacity>
-          <View style={styles.resendContainer}>
-            <Text style={styles.resendText}>Không nhận được mã?</Text>
-            <TouchableOpacity>
-              <Text style={styles.resendLink}>Gửi lại</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ImageBackground>
     </SafeAreaView>

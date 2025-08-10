@@ -10,4 +10,8 @@ export const styles = StyleSheet.create({
     fontSize: 28,
     marginBottom: 24,
   },
+
+  disabledButton: {
+    backgroundColor: "#9ca3af", // Màu xám để thể hiện trạng thái bị vô hiệu hóa
+  },
 });
