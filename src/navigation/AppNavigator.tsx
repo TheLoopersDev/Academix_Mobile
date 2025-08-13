@@ -22,6 +22,7 @@ import CartScreen from "../screens/CartScreen"; // Import CartScreen
 import { useAuth } from "../context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
 import WatchCourseScreen from "@/screens/watch-course/WatchCourseScreen";
+import DoQuizScreen from "@/screens/watch-course/DoQuizScreen";
 
 // --- Define data types ---
 type AuthStackParamList = {
@@ -40,6 +41,7 @@ type CoursesStackParamList = {
   CoursesList: undefined;
   CourseDetail: { courseId: string };
   WatchCourse: { courseId: string };
+  DoQuiz: { quizId: string };
 };
 
 type LectureStackParamList = {
@@ -97,6 +99,11 @@ function CoursesStack() {
         name="WatchCourse"
         component={WatchCourseScreen}
         options={{ title: "Watch Course" }}
+      />
+      <CoursesStackNavigator.Screen
+        name="DoQuiz"
+        component={DoQuizScreen}
+        options={{ title: "Do Quiz" }}
       />
     </CoursesStackNavigator.Navigator>
   );

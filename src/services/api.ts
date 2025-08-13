@@ -96,4 +96,10 @@ export const activateUserApi = (
 
 export const getTopCoursesApi = () => apiClient.get("/courses/top-courses");
 
+export const getUserDashboardDataApi = (userId: string) =>
+  apiClient.get(`/users/dashboard/${userId}`);
+
+export const getAllQuestionsApi = (quizId: string) =>
+  apiClient.get(`/quizzes/${quizId}/questions`);
+
 export default apiClient;

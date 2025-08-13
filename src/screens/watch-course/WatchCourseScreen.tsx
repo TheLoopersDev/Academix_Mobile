@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { StackScreenProps } from "@react-navigation/stack";
+import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
 import { Video, ResizeMode } from "expo-av";
 
 // Import styles từ tệp riêng biệt
@@ -21,6 +21,7 @@ import {
   getCourseDetailApi,
   updateLessonCompletionStatusApi,
 } from "../../services/api";
+import { useNavigation } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
@@ -50,6 +51,7 @@ interface Lesson {
   lectures?: number;
   isSection?: boolean;
   subLessons?: SubLesson[];
+  lessonOrder?: number;
 }
 
 // Định nghĩa kiểu cho một phần (Section) của khóa học
@@ -57,6 +59,17 @@ interface CourseSection {
   _id: string;
   title: string;
   lessons: Lesson[];
+  quizzes: Quiz[];
+}
+interface Quiz {
+  _id: string;
+  name: string;
+  duration: string;
+  difficulty: string;
+  isPublished: boolean;
+  sectionOrder?: number;
+  lessonOrder?: number; // Cần thêm trường này để sắp xếp
+  questions?: QuestionData[];
 }
 
 // Định nghĩa kiểu cho dữ liệu khóa học
@@ -79,6 +92,25 @@ type CoursesStackParamList = {
   WatchCourse: WatchCourseScreenRouteParams;
 };
 
+export type AnswerOptionData = {
+  id: string;
+  text: string;
+};
+
+// Định nghĩa kiểu cho một câu hỏi
+export type QuestionData = {
+  id?: string;
+  _id?: string;
+  questionId?: string;
+  questionNumber: number;
+  title: string;
+  questionImage?: string;
+  points?: number | string;
+  options: AnswerOptionData[];
+  choicesConfig: { isMultipleAnswer: boolean };
+  correctAnswerIds?: string[];
+};
+
 // Định nghĩa kiểu props cho WatchCourseScreen
 type WatchCourseScreenProps = StackScreenProps<
   CoursesStackParamList,
@@ -88,6 +120,8 @@ type WatchCourseScreenProps = StackScreenProps<
 // Component chính cho màn hình Watch Course
 const WatchCourseScreen = ({ route }: WatchCourseScreenProps) => {
   const { courseId } = route.params;
+  const navigation =
+    useNavigation<StackNavigationProp<CoursesStackParamList>>();
 
   const [activeTab, setActiveTab] = useState("Lesson");
   const [course, setCourse] = useState<CourseData | null>(null);
@@ -96,7 +130,7 @@ const WatchCourseScreen = ({ route }: WatchCourseScreenProps) => {
   const [loading, setLoading] = useState<boolean>(true);
   const hasUpdatedProgress = useRef(false);
   const videoRef = useRef<Video>(null);
-  const allLessons = useRef<Lesson[]>([]); // Ref mới để lưu danh sách lessons phẳng // Logic fetch dữ liệu khóa học và khởi tạo
+  const allLessons = useRef<(Lesson | Quiz)[]>([]); // Ref mới để lưu danh sách lessons phẳng // Logic fetch dữ liệu khóa học và khởi tạo
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -106,10 +140,29 @@ const WatchCourseScreen = ({ route }: WatchCourseScreenProps) => {
         if (res.data.success) {
           const fetchedCourse: CourseData = res.data.course;
           setCourse(fetchedCourse); // Tạo danh sách lessons phẳng sau khi fetch data và gán kiểu dữ liệu
+          console.log(
+            "Fetched course data:",
+            res.data.course.sections[0].quizzes[0]
+          );
 
-          allLessons.current = fetchedCourse.sections.flatMap(
-            (section: CourseSection) => section.lessons
-          ); // Logic set video đầu tiên
+          allLessons.current = fetchedCourse.sections.flatMap((section) => {
+            const lessonItems = section.lessons.map((item) => ({
+              ...item,
+              order: item.lessonOrder, // Giả sử lessons có lessonOrder
+            }));
+
+            const quizItems = section.quizzes.map((item) => ({
+              ...item,
+              // quiz đã có trường `order` sẵn, nên không cần gán lại
+              // order: item.order
+            }));
+
+            return [...lessonItems, ...quizItems];
+          });
+
+          allLessons.current.sort(
+            (a, b) => (a.lessonOrder || 0) - (b.lessonOrder || 0)
+          );
 
           if (
             fetchedCourse.sections.length > 0 &&
@@ -189,6 +242,38 @@ const WatchCourseScreen = ({ route }: WatchCourseScreenProps) => {
     []
   );
 
+  // const handleQuizClick = useCallback(
+  //   (quizId: string, isLocked: boolean) => {
+  //     if (isLocked) {
+  //       Alert.alert(
+  //         "Bài kiểm tra bị khóa",
+  //         "Bạn cần hoàn thành bài học trước để làm bài kiểm tra này."
+  //       );
+  //       return;
+  //     }
+  //     // quiz: Sử dụng navigation để chuyển sang màn hình DoQuizScreen và truyền quizId
+  //     navigation.navigate("DoQuiz", { quizId });
+  //   },
+  //   [navigation]
+  // );
+
+  const handleQuizClick = useCallback(
+    (quizId: string, isLocked: boolean) => {
+      if (isLocked) {
+        Alert.alert(
+          "Bài kiểm tra bị khóa",
+          "Bạn cần hoàn thành bài học trước để làm bài kiểm tra này."
+        );
+        return;
+      }
+
+      // Đơn giản hóa logic, chỉ cần truyền quizId
+      // DoQuizScreen sẽ tự fetch questions
+      console.log(`Navigating to DoQuizScreen with quizId: ${quizId}`);
+      navigation.navigate("DoQuiz", { quizId });
+    },
+    [navigation]
+  );
   const markLessonCompleted = (idToMark: string) => {
     setCourse((prevCourse) => {
       if (!prevCourse) return prevCourse;
@@ -202,8 +287,12 @@ const WatchCourseScreen = ({ route }: WatchCourseScreenProps) => {
         })
       ); // Cập nhật lại danh sách lessons phẳng sau khi state được thay đổi
 
-      allLessons.current = updatedSections.flatMap(
-        (section: CourseSection) => section.lessons
+      allLessons.current = updatedSections.flatMap((section) => [
+        ...section.lessons,
+        ...(section.quizzes || []),
+      ]);
+      allLessons.current.sort(
+        (a, b) => (a.lessonOrder || 0) - (b.lessonOrder || 0)
       );
 
       return { ...prevCourse, sections: updatedSections };
@@ -308,87 +397,118 @@ const WatchCourseScreen = ({ route }: WatchCourseScreenProps) => {
                 </View>
 
                 <View style={styles.subLessonsContainer}>
-                  {section.lessons.map((lesson: Lesson) => {
-                    // Logic xác định trạng thái khóa của bài học
-                    const lessonIndex = allLessons.current.findIndex(
-                      (l) => l._id === lesson._id
-                    );
-                    const isFirstLesson = lessonIndex === 0;
-                    const previousLesson = allLessons.current[lessonIndex - 1];
-                    const isLocked =
-                      !isFirstLesson && !previousLesson?.isCompleted;
-                    return (
-                      <TouchableOpacity
-                        key={lesson._id}
-                        style={[
-                          styles.subLessonItem,
-                          currentLessonId === lesson._id &&
-                            styles.activeLessonItem,
-                          isLocked && styles.lockedLessonItem,
-                        ]}
-                        onPress={() =>
-                          handleLessonClick(
-                            lesson.videoUrl?.url,
-                            lesson._id,
-                            isLocked
-                          )
-                        }
-                        disabled={isLocked}
-                      >
-                        <View style={styles.subLessonLeft}>
-                          {isLocked ? (
-                            <Icon
-                              name="lock"
-                              size={16}
-                              color="#9ca3af"
-                              style={styles.subLessonIcon}
-                            />
-                          ) : lesson.isCompleted ? (
-                            <Icon
-                              name="check-circle"
-                              size={16}
-                              color="#2563eb"
-                              style={styles.subLessonIcon}
-                            />
-                          ) : (
-                            <Icon
-                              name="play-circle"
-                              size={16}
-                              color="#4b5563"
-                              style={styles.subLessonIcon}
-                            />
-                          )}
+                  {[...section.lessons, ...section.quizzes]
+                    .sort((a, b) => (a.lessonOrder || 0) - (b.lessonOrder || 0))
+                    .map((item: Lesson | Quiz) => {
+                      // quiz: Xác định đây là Lesson hay Quiz để render khác nhau
+                      const isLesson = "videoUrl" in item;
+                      const isQuiz = !isLesson;
+                      const itemTitle = isQuiz
+                        ? (item as Quiz).name
+                        : (item as Lesson).title;
+                      const itemDuration = item.duration;
 
-                          <Text
-                            style={[
-                              styles.subLessonTitle,
-                              isLocked && styles.lockedText,
-                            ]}
-                          >
-                            {lesson.title}
-                          </Text>
-                        </View>
+                      // Logic xác định trạng thái khóa của bài học
+                      const itemIndex = allLessons.current.findIndex(
+                        (i) => i._id === item._id
+                      );
+                      const isFirstItem = itemIndex === 0;
+                      const previousItem = allLessons.current[itemIndex - 1];
+                      const isLocked =
+                        !isFirstItem && !(previousItem as Lesson)?.isCompleted; // quiz: chỉ khóa nếu bài trước đó là lesson và chưa hoàn thành
 
-                        <View style={styles.subLessonRight}>
-                          {lesson.documentUrl?.url ? (
-                            <View style={styles.documentTag}>
-                              <Text style={styles.documentTagText}>
-                                Document
-                              </Text>
-                            </View>
-                          ) : lesson.videoUrl?.url ? (
-                            <View style={styles.videoTag}>
-                              <Text style={styles.videoTagText}>Video</Text>
-                            </View>
-                          ) : null}
+                      return (
+                        <TouchableOpacity
+                          key={item._id}
+                          style={[
+                            styles.subLessonItem,
+                            currentLessonId === item._id &&
+                              styles.activeLessonItem,
+                            isLocked && styles.lockedLessonItem,
+                          ]}
+                          onPress={() => {
+                            if (isQuiz) {
+                              handleQuizClick(item._id, isLocked); // quiz
+                            } else {
+                              handleLessonClick(
+                                (item as Lesson).videoUrl?.url,
+                                item._id,
+                                isLocked
+                              );
+                            }
+                          }}
+                          disabled={isLocked}
+                        >
+                          <View style={styles.subLessonLeft}>
+                            {isLocked ? (
+                              <Icon
+                                name="lock"
+                                size={16}
+                                color="#9ca3af"
+                                style={styles.subLessonIcon}
+                              />
+                            ) : isQuiz ? ( // quiz
+                              <Icon
+                                name="question-circle"
+                                size={16}
+                                color="#10b981"
+                                style={styles.subLessonIcon}
+                              />
+                            ) : (item as Lesson).isCompleted ? (
+                              <Icon
+                                name="check-circle"
+                                size={16}
+                                color="#2563eb"
+                                style={styles.subLessonIcon}
+                              />
+                            ) : (
+                              <Icon
+                                name="play-circle"
+                                size={16}
+                                color="#4b5563"
+                                style={styles.subLessonIcon}
+                              />
+                            )}
 
-                          <Text style={styles.subLessonDuration}>
-                            {lesson.duration}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
+                            <Text
+                              style={[
+                                styles.subLessonTitle,
+                                isLocked && styles.lockedText,
+                              ]}
+                            >
+                              {itemTitle}
+                            </Text>
+                          </View>
+
+                          <View style={styles.subLessonRight}>
+                            {isQuiz ? ( // quiz
+                              <View
+                                style={[
+                                  styles.videoTag,
+                                  { backgroundColor: "#10b981" },
+                                ]}
+                              >
+                                <Text style={styles.videoTagText}>Quiz</Text>
+                              </View>
+                            ) : (item as Lesson).documentUrl?.url ? (
+                              <View style={styles.documentTag}>
+                                <Text style={styles.documentTagText}>
+                                  Document
+                                </Text>
+                              </View>
+                            ) : (item as Lesson).videoUrl?.url ? (
+                              <View style={styles.videoTag}>
+                                <Text style={styles.videoTagText}>Video</Text>
+                              </View>
+                            ) : null}
+
+                            <Text style={styles.subLessonDuration}>
+                              {itemDuration}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
                 </View>
               </View>
             ))}

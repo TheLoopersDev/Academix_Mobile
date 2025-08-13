@@ -5,22 +5,26 @@ import { NavigationContainer } from "@react-navigation/native";
 import { CartProvider } from "./context/CartContext";
 import { View, StyleSheet } from "react-native";
 import Header from "./components/Header";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        {/* <-- Thêm CartProvider vào đây */}
-        <NavigationContainer>
-          <View style={styles.container}>
-            <Header /> {/* Thêm component Header vào đây */}
-            <View style={styles.content}>
-              <AppNavigator />
+    <Provider store={store}>
+      <AuthProvider>
+        <CartProvider>
+          {/* <-- Thêm CartProvider vào đây */}
+          <NavigationContainer>
+            <View style={styles.container}>
+              <Header /> {/* Thêm component Header vào đây */}
+              <View style={styles.content}>
+                <AppNavigator />
+              </View>
             </View>
-          </View>
-        </NavigationContainer>
-      </CartProvider>
-    </AuthProvider>
+          </NavigationContainer>
+        </CartProvider>
+      </AuthProvider>
+    </Provider>
   );
 }
 

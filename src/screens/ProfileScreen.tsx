@@ -20,6 +20,7 @@ import {
   updateUserInfoApi,
   updateAvatarApi,
   getMyPurchasedCoursesApi,
+  getUserDashboardDataApi,
 } from "../services/api";
 import { useNavigation, NavigationProp } from "@react-navigation/native"; // Only import useNavigation and NavigationProp
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -91,6 +92,8 @@ const EditInfoTab = ({ user, onLogoutPress }: EditInfoTabProps) => {
   const [loading, setLoading] = useState(false);
   const { refreshUser } = useAuth();
 
+  console.log("dsadsad");
+
   const handleUpdate = async () => {
     setLoading(true);
     try {
@@ -161,17 +164,30 @@ type MyCoursesTabProps = {
   navigation: MyCoursesTabNavigationProp; // Receive navigation prop
 };
 
+// Khai báo kiểu dữ liệu cho toàn bộ dashboard data
+type UserDashboardData = {
+  stats: {
+    totalCourses: number;
+    completedCourses: number;
+    certificates: number;
+    hoursSpent: number;
+  };
+  latestCourse: PurchasedCourse;
+  relatedCourses: PurchasedCourse[];
+  studentStats: any[]; // Thay thế bằng kiểu dữ liệu cụ thể nếu có
+  upcomingExams: any[]; // Thay thế bằng kiểu dữ liệu cụ thể nếu có
+};
+
 const MyCoursesTab = ({ HeaderAndTabs, navigation }: MyCoursesTabProps) => {
   const [myCourses, setMyCourses] = useState<PurchasedCourse[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth(); // Get user from auth context
 
   useEffect(() => {
     const fetchMyCourses = async () => {
       try {
         setLoading(true);
         const response = await getMyPurchasedCoursesApi();
-        console.log("dsada", response.data);
-
         if (response.data.success) {
           // Cập nhật cách lấy danh sách khóa học
           // Truy cập trực tiếp response.data.data, nếu nó không phải là mảng thì mặc định là []
