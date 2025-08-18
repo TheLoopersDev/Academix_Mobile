@@ -172,7 +172,6 @@ export default function HomeScreen() {
         setActiveCategory={setActiveCategory}
       />
 
-      {/* Sử dụng CourseListHome thay thế cho CourseGrid */}
       <CourseListHome title="Top courses" courses={courseCardData} />
     </ScrollView>
   );

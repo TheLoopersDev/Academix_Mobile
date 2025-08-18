@@ -36,8 +36,7 @@ type CoursesStackParamList = {
 
 type Props = StackScreenProps<CoursesStackParamList, "CoursesList">;
 
-// Bỏ category filters hoàn toàn
-const allCategories = ["All"]; // Sử dụng "All" thay vì "Tất cả"
+const allCategories = ["All"];
 
 export default function CoursesListScreen({ navigation }: Props) {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -48,7 +47,7 @@ export default function CoursesListScreen({ navigation }: Props) {
   const [totalPages, setTotalPages] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentSearch, setCurrentSearch] = useState(""); // <-- Thêm state mới để lưu từ khóa tìm kiếm hiện tại
+  const [currentSearch, setCurrentSearch] = useState("");
 
   const fetchCourses = useCallback(
     async (pageToFetch: number, category: string, search: string) => {
@@ -175,7 +174,7 @@ export default function CoursesListScreen({ navigation }: Props) {
         />
         <TouchableOpacity
           style={styles.searchButton}
-          onPress={handleSearch} // Gọi hàm handleSearch khi nhấn nút
+          onPress={handleSearch}
         >
           <Icon name="search" size={24} color="#fff" />
         </TouchableOpacity>

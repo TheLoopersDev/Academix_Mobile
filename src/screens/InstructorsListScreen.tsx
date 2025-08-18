@@ -69,7 +69,6 @@ export default function LectureListScreen({ navigation }: Props) {
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.title}>{item.profession || "Instructor"}</Text>
 
-      {/* Container cho các nút */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={[styles.button, styles.secondaryButton]}>
           <Text style={[styles.buttonText, styles.secondaryButtonText]}>

@@ -1,5 +1,5 @@
 import { registerRootComponent } from "expo";
-import App from "../neurolearn_mobile/src/App"; // File App.tsx của bạn đang ở thư mục gốc
+import App from "./src/App";
 
-// registerRootComponent sẽ tự động gọi AppRegistry.registerComponent('main', () => App)
+// registerRootComponent calls AppRegistry.registerComponent('main', () => App)
 registerRootComponent(App);

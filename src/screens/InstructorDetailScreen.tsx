@@ -85,7 +85,6 @@ export default function InstructorDetailScreen({ route }: Props) {
     );
   }
 
-  // Chuyển đổi dữ liệu khóa học từ API để tương thích với CourseGrid
   console.log("Fetched instructor data:", instructor.uploadedCourses);
 
   const instructorCourses =

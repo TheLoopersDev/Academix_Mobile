@@ -59,7 +59,7 @@ interface CourseSection {
   _id: string;
   title: string;
   lessons: Lesson[];
-  quizzes: Quiz[];
+  quizzes?: Quiz[];
 }
 interface Quiz {
   _id: string;
@@ -142,7 +142,7 @@ const WatchCourseScreen = ({ route }: WatchCourseScreenProps) => {
           setCourse(fetchedCourse); // Tạo danh sách lessons phẳng sau khi fetch data và gán kiểu dữ liệu
           console.log(
             "Fetched course data:",
-            res.data.course.sections[0].quizzes[0]
+            res.data.course.sections[0]?.quizzes?.[0] || "No quizzes found"
           );
 
           allLessons.current = fetchedCourse.sections.flatMap((section) => {
@@ -151,7 +151,7 @@ const WatchCourseScreen = ({ route }: WatchCourseScreenProps) => {
               order: item.lessonOrder, // Giả sử lessons có lessonOrder
             }));
 
-            const quizItems = section.quizzes.map((item) => ({
+            const quizItems = (section.quizzes || []).map((item) => ({
               ...item,
               // quiz đã có trường `order` sẵn, nên không cần gán lại
               // order: item.order
@@ -397,7 +397,7 @@ const WatchCourseScreen = ({ route }: WatchCourseScreenProps) => {
                 </View>
 
                 <View style={styles.subLessonsContainer}>
-                  {[...section.lessons, ...section.quizzes]
+                  {[...section.lessons, ...(section.quizzes || [])]
                     .sort((a, b) => (a.lessonOrder || 0) - (b.lessonOrder || 0))
                     .map((item: Lesson | Quiz) => {
                       // quiz: Xác định đây là Lesson hay Quiz để render khác nhau

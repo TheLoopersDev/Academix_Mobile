@@ -13,10 +13,9 @@ export default function App() {
     <Provider store={store}>
       <AuthProvider>
         <CartProvider>
-          {/* <-- Thêm CartProvider vào đây */}
           <NavigationContainer>
             <View style={styles.container}>
-              <Header /> {/* Thêm component Header vào đây */}
+              <Header />
               <View style={styles.content}>
                 <AppNavigator />
               </View>

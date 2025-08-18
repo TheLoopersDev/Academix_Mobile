@@ -18,10 +18,9 @@ export default function CategoryList({
       showsHorizontalScrollIndicator={false}
       style={styles.categories}
     >
-      {/* Thêm key={category} vào đây */}
       {categories.map((category) => (
         <TouchableOpacity
-          key={category} // ✅ THÊM DÒNG NÀY
+          key={category}
           style={[
             styles.categoryButton,
             activeCategory === category && styles.categoryButtonActive,

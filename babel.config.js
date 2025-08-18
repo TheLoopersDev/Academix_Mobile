@@ -3,7 +3,7 @@ module.exports = function (api) {
   return {
     presets: ["babel-preset-expo"],
     plugins: [
-      "module:react-native-dotenv", // <-- Thêm dòng này
+      "module:react-native-dotenv",
     ],
   };
 };
