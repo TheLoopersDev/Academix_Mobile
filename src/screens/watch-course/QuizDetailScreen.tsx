@@ -13,6 +13,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { StyleSheet } from "react-native";
 import { getAllQuestionsApi } from "../../services/api";
 import { QuestionData, AnswerOptionData } from "../../types/quizType";
+import { GlobalColors, Typography, Spacing, BorderRadius } from "../../styles/GlobalColors";
 
 interface QuestionBreakdown {
   questionId: string;
@@ -333,29 +334,41 @@ const QuizDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0F172A", // Dark slate background
+    backgroundColor: GlobalColors.background,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: "#1E293B", // Card background
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.lg,
+    backgroundColor: GlobalColors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: "#334155",
+    borderBottomColor: GlobalColors.borderLight,
+    shadowColor: GlobalColors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   backButton: {
-    marginRight: 16,
-    padding: 8,
-    backgroundColor: "#334155",
-    borderRadius: 12,
+    marginRight: Spacing.lg,
+    padding: Spacing.sm,
+    backgroundColor: GlobalColors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: GlobalColors.border,
+    shadowColor: GlobalColors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#F8FAFC", // Light text
+    fontSize: Typography.fontSize["2xl"],
+    fontWeight: Typography.fontWeight.bold,
+    color: GlobalColors.textPrimary,
     flex: 1,
-    letterSpacing: 0.5,
+    letterSpacing: Typography.letterSpacing.wide,
   },
   errorContainer: {
     flex: 1,

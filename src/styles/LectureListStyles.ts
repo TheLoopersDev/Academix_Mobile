@@ -1,4 +1,5 @@
 import { StyleSheet, Dimensions } from "react-native";
+import { GlobalColors, Typography, Spacing, BorderRadius } from "./GlobalColors";
 
 const { width } = Dimensions.get("window");
 const cardWidth = (width - 48) / 2; // 16 padding, 8*2 margin
@@ -6,42 +7,45 @@ const cardWidth = (width - 48) / 2; // 16 padding, 8*2 margin
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7F8FA",
+    backgroundColor: GlobalColors.background,
   },
   listContent: {
-    padding: 8,
+    padding: Spacing.sm,
   },
   instructorCard: {
-    backgroundColor: "#fff",
-    borderRadius: 24,
+    backgroundColor: GlobalColors.surface,
+    borderRadius: BorderRadius["2xl"],
     width: cardWidth,
-    margin: 8,
-    padding: 16,
+    margin: Spacing.sm,
+    padding: Spacing.lg,
     alignItems: "center",
     elevation: 4,
-    shadowColor: "#3858F8",
+    shadowColor: GlobalColors.shadow,
     shadowOpacity: 0.1,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
+    borderWidth: 1,
+    borderColor: GlobalColors.border,
   },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginBottom: 12,
+    marginBottom: Spacing.md,
     borderWidth: 2,
-    borderColor: "#f0f0f0",
+    borderColor: GlobalColors.borderLight,
   },
   name: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#0D0D0D",
-    marginBottom: 2,
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    color: GlobalColors.textPrimary,
+    marginBottom: Spacing.xs,
+    letterSpacing: Typography.letterSpacing.wide,
   },
   title: {
-    fontSize: 12,
-    color: "#6B6B6B",
-    marginBottom: 12,
+    fontSize: Typography.fontSize.xs,
+    color: GlobalColors.textSecondary,
+    marginBottom: Spacing.md,
   },
   statsContainer: {
     flexDirection: "row",

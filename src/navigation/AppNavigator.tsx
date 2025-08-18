@@ -25,6 +25,7 @@ import WatchCourseScreen from "@/screens/watch-course/WatchCourseScreen";
 import DoQuizScreen from "@/screens/watch-course/DoQuizScreen";
 import QuizResultScreen from "@/screens/watch-course/QuizResultScreen";
 import QuizDetailScreen from "@/screens/watch-course/QuizDetailScreen";
+import { GlobalColors } from "../styles/GlobalColors";
 
 // --- Define data types ---
 type AuthStackParamList = {
@@ -196,8 +197,16 @@ function MainFlow() {
             iconName = focused ? "person" : "person-outline";
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: "#3858F8",
-        tabBarInactiveTintColor: "gray",
+        tabBarActiveTintColor: GlobalColors.primary,
+        tabBarInactiveTintColor: GlobalColors.textMuted,
+        tabBarStyle: {
+          backgroundColor: GlobalColors.surface,
+          borderTopColor: GlobalColors.borderLight,
+          borderTopWidth: 1,
+          paddingBottom: 8,
+          paddingTop: 8,
+          height: 60,
+        },
         headerShown: false,
       })}
     >

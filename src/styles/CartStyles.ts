@@ -1,26 +1,28 @@
 import { StyleSheet } from "react-native";
+import { GlobalColors, Typography, Spacing, BorderRadius } from "./GlobalColors";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7F8FA",
+    backgroundColor: GlobalColors.background,
   },
   // Header
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderColor: "#e0e0e0",
-    backgroundColor: "#fff",
+    borderColor: GlobalColors.borderLight,
+    backgroundColor: GlobalColors.surface,
   },
   headerTitle: {
-    paddingBottom: 20,
-    fontSize: 20,
-    fontWeight: "semibold",
+    paddingBottom: Spacing.xl,
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.semibold,
+    color: GlobalColors.textPrimary,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: "gray",
+    fontSize: Typography.fontSize.sm,
+    color: GlobalColors.textSecondary,
   },
   // Cart Item
   cartItemContainer: {

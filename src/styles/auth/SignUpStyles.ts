@@ -1,17 +1,16 @@
 import { StyleSheet } from "react-native";
-import { styles as loginStyles } from "./LoginStyles"; // Kế thừa style từ Login
+import { styles as loginStyles } from "./LoginStyles";
+import { GlobalColors, Typography, Spacing } from "../GlobalColors";
 
 export const styles = StyleSheet.create({
-  ...loginStyles, // Sao chép tất cả style từ Login
-  // Bạn có thể ghi đè hoặc thêm style mới ở đây nếu cần
+  ...loginStyles,
   title: {
-    // Ví dụ: Thay đổi tiêu đề
     ...loginStyles.title,
-    fontSize: 28,
-    marginBottom: 24,
+    fontSize: Typography.fontSize["3xl"],
+    marginBottom: Spacing["2xl"],
   },
 
   disabledButton: {
-    backgroundColor: "#9ca3af", // Màu xám để thể hiện trạng thái bị vô hiệu hóa
+    backgroundColor: GlobalColors.textMuted,
   },
 });

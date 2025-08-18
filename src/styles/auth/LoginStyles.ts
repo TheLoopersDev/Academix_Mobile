@@ -1,4 +1,5 @@
 import { StyleSheet, Dimensions } from "react-native";
+import { GlobalColors, Typography, Spacing, BorderRadius } from "../GlobalColors";
 
 const { height } = Dimensions.get("window");
 
@@ -12,39 +13,46 @@ export const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(247, 248, 250, 0.85)", // Màu nền mờ
+    backgroundColor: "rgba(250, 250, 250, 0.85)",
   },
   formContainer: {
-    paddingHorizontal: 24,
-    paddingTop: height * 0.1, // Đẩy form xuống một chút
+    paddingHorizontal: Spacing["2xl"],
+    paddingTop: height * 0.1,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#0D0D0D",
-    marginBottom: 32,
+    fontSize: Typography.fontSize["4xl"],
+    fontWeight: Typography.fontWeight.bold,
+    color: GlobalColors.textPrimary,
+    marginBottom: Spacing["4xl"],
+    letterSpacing: Typography.letterSpacing.wide,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 12,
+    backgroundColor: GlobalColors.surface,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    borderColor: GlobalColors.border,
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
+    shadowColor: GlobalColors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   input: {
     flex: 1,
     height: 50,
-    fontSize: 16,
-    marginLeft: 12,
+    fontSize: Typography.fontSize.base,
+    marginLeft: Spacing.md,
+    color: GlobalColors.textPrimary,
   },
   forgotPassword: {
     textAlign: "right",
-    color: "#333",
-    fontWeight: "500",
-    marginBottom: 24,
+    color: GlobalColors.textSecondary,
+    fontWeight: Typography.fontWeight.medium,
+    marginBottom: Spacing["2xl"],
   },
   loginButton: {
     backgroundColor: "#5A5A5A",

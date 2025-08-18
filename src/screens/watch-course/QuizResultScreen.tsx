@@ -10,6 +10,7 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import Icon from "react-native-vector-icons/Ionicons";
+import { GlobalColors, Typography, Spacing, BorderRadius } from "../../styles/GlobalColors";
 import { StyleSheet } from "react-native";
 
 interface QuizResult {
@@ -205,146 +206,164 @@ const QuizResultScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0F172A", // Dark slate background
+    backgroundColor: GlobalColors.background,
   },
   scrollContent: {
-    padding: 20,
+    padding: Spacing.xl,
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: Spacing.xl,
   },
   errorText: {
-    fontSize: 18,
-    color: "#CBD5E1", // Light muted text
-    marginTop: 16,
-    marginBottom: 24,
-    fontWeight: "500",
+    fontSize: Typography.fontSize.lg,
+    color: GlobalColors.textSecondary,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing["2xl"],
+    fontWeight: Typography.fontWeight.medium,
+    textAlign: "center",
   },
   header: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: Spacing["4xl"],
   },
   title: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: "#F8FAFC", // Light text
-    marginTop: 16,
-    letterSpacing: 0.5,
+    fontSize: Typography.fontSize["4xl"],
+    fontWeight: Typography.fontWeight.extrabold,
+    color: GlobalColors.textPrimary,
+    marginTop: Spacing.lg,
+    letterSpacing: Typography.letterSpacing.wide,
+    textAlign: "center",
   },
   subtitle: {
-    fontSize: 18,
-    color: "#CBD5E1", // Light muted text
-    marginTop: 8,
-    fontWeight: "500",
+    fontSize: Typography.fontSize.lg,
+    color: GlobalColors.textSecondary,
+    marginTop: Spacing.sm,
+    fontWeight: Typography.fontWeight.medium,
+    textAlign: "center",
   },
   scoreCard: {
-    backgroundColor: "#1E293B", // Card background
-    borderRadius: 20,
-    padding: 28,
-    marginBottom: 24,
+    backgroundColor: GlobalColors.surface,
+    borderRadius: BorderRadius["2xl"],
+    padding: Spacing["3xl"],
+    marginBottom: Spacing["2xl"],
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: GlobalColors.border,
+    shadowColor: GlobalColors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   scoreHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: Spacing.xl,
   },
   scoreTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#F8FAFC", // Light text
-    letterSpacing: 0.3,
+    fontSize: Typography.fontSize["2xl"],
+    fontWeight: Typography.fontWeight.bold,
+    color: GlobalColors.textPrimary,
+    letterSpacing: Typography.letterSpacing.wide,
   },
   scorePercentage: {
-    fontSize: 42,
-    fontWeight: "900",
-    letterSpacing: 0.5,
+    fontSize: Typography.fontSize["5xl"],
+    fontWeight: Typography.fontWeight.extrabold,
+    letterSpacing: Typography.letterSpacing.wide,
   },
   scoreDetails: {
-    marginBottom: 20,
+    marginBottom: Spacing.xl,
   },
   scoreText: {
-    fontSize: 18,
-    color: "#CBD5E1", // Light muted text
-    marginBottom: 6,
-    fontWeight: "500",
+    fontSize: Typography.fontSize.lg,
+    color: GlobalColors.textSecondary,
+    marginBottom: Spacing.sm,
+    fontWeight: Typography.fontWeight.medium,
   },
   scoreSubtext: {
-    fontSize: 16,
-    color: "#64748B", // Very muted text
-    fontWeight: "400",
+    fontSize: Typography.fontSize.base,
+    color: GlobalColors.textMuted,
+    fontWeight: Typography.fontWeight.normal,
   },
   statusBadge: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 25,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
     alignSelf: "center",
   },
   statusText: {
-    color: "#F8FAFC",
-    fontWeight: "800",
-    fontSize: 16,
-    letterSpacing: 0.3,
+    color: GlobalColors.textLight,
+    fontWeight: Typography.fontWeight.extrabold,
+    fontSize: Typography.fontSize.base,
+    letterSpacing: Typography.letterSpacing.wide,
   },
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#1E293B", // Card background
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 32,
+    backgroundColor: GlobalColors.surface,
+    borderRadius: BorderRadius["2xl"],
+    padding: Spacing["2xl"],
+    marginBottom: Spacing["4xl"],
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: GlobalColors.border,
+    shadowColor: GlobalColors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   statItem: {
     alignItems: "center",
   },
   statNumber: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#F8FAFC", // Light text
-    marginTop: 8,
-    letterSpacing: 0.5,
+    fontSize: Typography.fontSize["3xl"],
+    fontWeight: Typography.fontWeight.extrabold,
+    color: GlobalColors.textPrimary,
+    marginTop: Spacing.sm,
+    letterSpacing: Typography.letterSpacing.wide,
   },
   statLabel: {
-    fontSize: 14,
-    color: "#64748B", // Very muted text
-    marginTop: 6,
-    fontWeight: "500",
-    letterSpacing: 0.3,
+    fontSize: Typography.fontSize.sm,
+    color: GlobalColors.textMuted,
+    marginTop: Spacing.sm,
+    fontWeight: Typography.fontWeight.medium,
+    letterSpacing: Typography.letterSpacing.wide,
   },
   buttonContainer: {
-    gap: 16,
+    gap: Spacing.lg,
   },
   button: {
-    paddingVertical: 18,
-    paddingHorizontal: 28,
-    borderRadius: 16,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing["3xl"],
+    borderRadius: BorderRadius.xl,
     alignItems: "center",
+    shadowColor: GlobalColors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   primaryButton: {
-    backgroundColor: "#1E40AF", // Deep blue primary
+    backgroundColor: GlobalColors.primary,
   },
   secondaryButton: {
-    backgroundColor: "transparent",
+    backgroundColor: GlobalColors.surface,
     borderWidth: 2,
-    borderColor: "#1E40AF",
+    borderColor: GlobalColors.primary,
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: "700",
-    letterSpacing: 0.3,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: Typography.letterSpacing.wide,
   },
   primaryButtonText: {
-    color: "#F8FAFC", // Light text
+    color: GlobalColors.textLight,
   },
   secondaryButtonText: {
-    color: "#1E40AF", // Primary color
+    color: GlobalColors.primary,
   },
 });
 

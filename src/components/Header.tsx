@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Image, StyleSheet } from "react-native";
+import { GlobalColors } from "../styles/GlobalColors";
 
 // Import hình ảnh logo từ thư mục assets
 // Vui lòng thay đổi đường dẫn này thành đường dẫn thực tế của logo của bạn
@@ -16,22 +17,24 @@ const Header = () => {
 const styles = StyleSheet.create({
   header: {
     width: "100%",
-    height: 60, // Chiều cao cố định cho header
-    backgroundColor: "#FFFFFF",
+    height: 60,
+    backgroundColor: GlobalColors.surface,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center", // Căn giữa logo
+    justifyContent: "center",
     paddingHorizontal: 16,
-    elevation: 4, // Shadow cho Android
-    shadowColor: "#000", // Shadow cho iOS
+    elevation: 4,
+    shadowColor: GlobalColors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     zIndex: 100,
+    borderBottomWidth: 1,
+    borderBottomColor: GlobalColors.borderLight,
   },
   logo: {
-    height: 45, // Chiều cao của logo
-    width: 45, // Chiều rộng của logo
+    height: 45,
+    width: 45,
   },
 });
 

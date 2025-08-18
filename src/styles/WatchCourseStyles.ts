@@ -1,76 +1,78 @@
 import { StyleSheet, Dimensions, StatusBar } from "react-native";
+import { GlobalColors, Typography, Spacing, BorderRadius } from "./GlobalColors";
 
 const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f2f5",
+    backgroundColor: GlobalColors.background,
   },
   headerContainer: {
-    backgroundColor: "#3b82f6", // blue-500
-    paddingTop: StatusBar.currentHeight || 40, // Adjust for status bar
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    backgroundColor: GlobalColors.primary,
+    paddingTop: StatusBar.currentHeight || 40,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.xl,
+    borderBottomLeftRadius: BorderRadius["3xl"],
+    borderBottomRightRadius: BorderRadius["3xl"],
     overflow: "hidden",
     position: "relative",
   },
   videoPlaceholder: {
     width: "100%",
-    height: width * 0.5, // Tỷ lệ 16:9 cho video
-    backgroundColor: "#4a5568", // dark gray for placeholder
+    height: width * 0.5,
+    backgroundColor: GlobalColors.textSecondary,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 15,
-    marginBottom: 20,
+    borderRadius: BorderRadius.xl,
+    marginBottom: Spacing.xl,
   },
   videoPlaceholderText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center", // Đảm bảo text căn giữa
+    color: GlobalColors.textLight,
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    textAlign: "center",
   },
   headerContent: {
-    paddingTop: 10,
+    paddingTop: Spacing.md,
   },
   headerSubtitle: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
+    color: GlobalColors.textLight,
+    fontSize: Typography.fontSize.xs,
+    fontWeight: Typography.fontWeight.semibold,
     opacity: 0.8,
-    marginBottom: 5,
+    marginBottom: Spacing.xs,
   },
   headerTitle: {
-    color: "white",
-    fontSize: 30,
-    fontWeight: "800",
-    lineHeight: 38,
-    marginBottom: 10,
+    color: GlobalColors.textLight,
+    fontSize: Typography.fontSize["3xl"],
+    fontWeight: Typography.fontWeight.extrabold,
+    lineHeight: Typography.lineHeight.tight * Typography.fontSize["3xl"],
+    marginBottom: Spacing.md,
+    letterSpacing: Typography.letterSpacing.wide,
   },
   headerTagline: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "500",
+    color: GlobalColors.textLight,
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.medium,
   },
   scrollViewContent: {
     flex: 1,
-    paddingHorizontal: 20,
-    marginTop: -20, // Kéo phần nội dung lên trên header một chút
+    paddingHorizontal: Spacing.xl,
+    marginTop: -Spacing.xl,
   },
   tabNavigation: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "white",
-    borderRadius: 15,
-    shadowColor: "#000",
+    backgroundColor: GlobalColors.surface,
+    borderRadius: BorderRadius.xl,
+    shadowColor: GlobalColors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
-    padding: 5,
-    marginBottom: 20,
+    padding: Spacing.xs,
+    marginBottom: Spacing.xl,
   },
   tabButton: {
     flex: 1,

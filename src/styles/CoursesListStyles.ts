@@ -1,4 +1,5 @@
 import { StyleSheet, Dimensions } from "react-native";
+import { GlobalColors, Typography, Spacing, BorderRadius } from "./GlobalColors";
 
 const { width } = Dimensions.get("window");
 const cardWidth = (width - 48) / 2;
@@ -6,32 +7,37 @@ const cardWidth = (width - 48) / 2;
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7F8FA",
+    backgroundColor: GlobalColors.background,
   },
   categoryFilterContainer: {
-    paddingVertical: 12,
-    paddingLeft: 16,
+    paddingVertical: Spacing.md,
+    paddingLeft: Spacing.lg,
   },
   categoryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: "#fff",
-    marginRight: 10,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
+    backgroundColor: GlobalColors.surface,
+    marginRight: Spacing.md,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: GlobalColors.border,
+    shadowColor: GlobalColors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   categoryButtonActive: {
-    backgroundColor: "#3858F8",
-    borderColor: "#3858F8",
+    backgroundColor: GlobalColors.primary,
+    borderColor: GlobalColors.primary,
   },
   categoryText: {
-    fontSize: 14,
-    color: "#444",
-    fontWeight: "500",
+    fontSize: Typography.fontSize.sm,
+    color: GlobalColors.textSecondary,
+    fontWeight: Typography.fontWeight.medium,
   },
   categoryTextActive: {
-    color: "#fff",
+    color: GlobalColors.textLight,
   },
   listContent: {
     paddingHorizontal: 8,
