@@ -40,8 +40,13 @@ export default function LoginScreen({ navigation }: Props) {
     setLoading(true);
     try {
       const response = await loginUserApi({ email, password });
+      console.log("Login response:", response.data); // Debug log
+      console.log("Response headers:", response.headers); // Check for cookies
+      console.log("Full response:", JSON.stringify(response, null, 2)); // Full response
+
       if (response.data.success && response.data.accessToken) {
-        await login(response.data.accessToken);
+        // Pass both access token and refresh token if available
+        await login(response.data.accessToken, response.data.refreshToken);
       } else {
         throw new Error(
           response.data.message || "Không nhận được token sau khi đăng nhập."

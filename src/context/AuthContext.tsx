@@ -23,7 +23,7 @@ interface AuthContextType {
   token: string | null;
   user: User | null;
   isLoading: boolean;
-  login: (newToken: string) => Promise<void>;
+  login: (newToken: string, refreshToken?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -71,10 +71,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     bootstrapAsync();
   }, []);
 
-  const login = async (newToken: string) => {
+  const login = async (newToken: string, refreshToken?: string) => {
     if (newToken) {
       await AsyncStorage.setItem("access_token", newToken);
       setToken(newToken);
+
+      // Save refresh token if provided
+      if (refreshToken) {
+        await AsyncStorage.setItem("refresh_token", refreshToken);
+        console.log("Refresh token saved");
+      }
     }
   };
 
@@ -85,6 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Logout API failed:", error);
     } finally {
       await AsyncStorage.removeItem("access_token");
+      await AsyncStorage.removeItem("refresh_token");
       setToken(null);
     }
   };

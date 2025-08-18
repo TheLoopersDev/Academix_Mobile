@@ -17,10 +17,13 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import styles from "../../styles/DoQuizStyle";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // quiz: Import API service
-import { getAllQuestionsApi } from "../../services/api";
+import { getAllQuestionsApi, submitQuizApi, getQuizAttemptsApi, updateLessonCompletionStatusApi } from "../../services/api";
+import { useSubmitQuizMutation } from "../../redux/features/quiz/quizApi";
 
 // ===== Types (align with your web types) =====
 export type AnswerOptionData = { id: string; text: string };
@@ -160,15 +163,46 @@ const QuestionGrid: React.FC<{
 };
 
 // ===== Navigation Types & useRoute typing =====
-type DoQuizParams = { quizId: string; questions?: QuestionData[] };
+type DoQuizParams = {
+  quizId: string;
+  questions?: QuestionData[];
+  courseData?: any; // Add course data to check completion
+  courseId?: string; // Add courseId for progress update
+};
 type DoQuizRoute = { key: string; name: string; params?: DoQuizParams };
+
+type CoursesStackParamList = {
+  CoursesList: undefined;
+  CourseDetail: { courseId: string };
+  WatchCourse: { courseId: string };
+  DoQuiz: { quizId: string };
+  QuizResult: {
+    result: any;
+    quizName?: string;
+    isTimeOut?: boolean;
+    quizId?: string;
+  };
+  QuizDetail: {
+    result: any;
+    quizName?: string;
+  };
+};
+
+type DoQuizScreenNavigationProp = StackNavigationProp<CoursesStackParamList, 'DoQuiz'>;
 
 // ===== Main Screen =====
 const DoQuizScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation() as DoQuizScreenNavigationProp;
   const route = useRoute() as unknown as DoQuizRoute;
 
-  const { quizId } = route?.params || {};
+  const { quizId, courseData, courseId } = route?.params || {};
+
+  console.log("DoQuizScreen - quizId:", quizId);
+  console.log("DoQuizScreen - courseData:", courseData);
+  console.log("DoQuizScreen - courseId:", courseId);
+
+  // Redux mutation hook for submitting quiz
+  const [submitQuiz, { isLoading: isSubmittingQuiz }] = useSubmitQuizMutation();
 
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,6 +213,7 @@ const DoQuizScreen: React.FC = () => {
   const [secondsLeft, setSecondsLeft] = useState(TOTAL_TIME_MINUTES * 60);
   const [showGrid, setShowGrid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [startTime] = useState<number>(Date.now()); // Track when quiz started
 
   const currentQuestion = useMemo(
     () => questions[currentIdx],
@@ -202,11 +237,41 @@ const DoQuizScreen: React.FC = () => {
       return;
     }
 
-    const fetchQuizQuestions = async () => {
+    const checkQuizCompletionAndFetch = async () => {
       try {
         setLoading(true);
         setError(null);
-        // Thay thế bằng API call thực tế của bạn
+
+        // Check if quiz has been completed using courseData
+        if (courseData && courseData.isCompleted && courseData.attempts > 0) {
+          console.log("Quiz already completed, navigating to results. Course data:", courseData);
+
+          // Create a mock result object from course data
+          const mockResult = {
+            totalQuestions: courseData.totalQuestions || 2,
+            attemptedQuestions: courseData.totalQuestions || 2,
+            correctQuestions: courseData.bestScore || 0,
+            incorrectQuestions: Math.max(0, (courseData.totalQuestions || 2) - (courseData.bestScore || 0)),
+            skippedQuestions: 0,
+            totalScore: courseData.bestScore || 0,
+            maxPossibleScore: courseData.totalQuestions || 2,
+            overallStatus: "completed",
+            isPassed: courseData.isPassed || false,
+            score: courseData.bestScore || 0,
+            passingScore: courseData.passingScore || 50,
+            breakdown: [] // Will be populated when we fetch the actual result
+          };
+
+          navigation.navigate("QuizResult", {
+            result: mockResult,
+            quizId: quizId,
+            quizName: "Quiz Results",
+            isTimeOut: false,
+          });
+          return;
+        }
+
+        // Load quiz questions if not completed
         const res: any = await getAllQuestionsApi(quizId);
         if (res.data.success) {
           // Xử lý dữ liệu trả về để phù hợp với kiểu QuestionData
@@ -228,8 +293,9 @@ const DoQuizScreen: React.FC = () => {
         setLoading(false);
       }
     };
-    fetchQuizQuestions();
-  }, [quizId]);
+
+    checkQuizCompletionAndFetch();
+  }, [quizId, navigation]);
 
   type IntervalId = ReturnType<typeof setInterval>;
   const timerRef = useRef<IntervalId | null>(null);
@@ -297,8 +363,14 @@ const DoQuizScreen: React.FC = () => {
   const goNext = () =>
     setCurrentIdx((i) => Math.min(questions.length - 1, i + 1));
 
-  const handleSubmit = (isTimeOut = false) => {
-    if (isSubmitting) return;
+  const handleSubmit = async (isTimeOut = false) => {
+    if (isSubmitting || isSubmittingQuiz) return;
+
+    if (!quizId) {
+      Alert.alert("Error", "Quiz ID is missing");
+      return;
+    }
+
     setIsSubmitting(true);
 
     if (timerRef.current !== null) {
@@ -306,19 +378,148 @@ const DoQuizScreen: React.FC = () => {
       timerRef.current = null;
     }
 
-    const payload = questions.map((q, idx) => ({
-      questionId: getQId(q, idx),
-      selectedOptionIds: Array.from(answers.get(idx) ?? []),
-    }));
+    try {
+      // Calculate time taken in seconds
+      const timeTakenSeconds = Math.floor((Date.now() - startTime) / 1000);
 
-    setTimeout(() => {
+      // Prepare answers payload
+      const answersPayload = questions.map((q, idx) => ({
+        questionId: getQId(q, idx),
+        selectedOptionIds: Array.from(answers.get(idx) ?? []),
+      }));
+
+      // Check for refresh token in AsyncStorage
+      let refreshToken = await AsyncStorage.getItem("refresh_token");
+      console.log("Refresh token found:", refreshToken ? "Yes" : "No");
+
+      // Temporary: Try to get access token as refresh token for testing
+      if (!refreshToken) {
+        const accessToken = await AsyncStorage.getItem("access_token");
+        if (accessToken) {
+          console.log("Using access token as refresh token for testing");
+          refreshToken = accessToken;
+        }
+      }
+
+      // Try using direct API call first for debugging
+      console.log("Submitting quiz with payload:", {
+        answers: answersPayload,
+        timeTakenSeconds,
+        refreshToken: refreshToken ? "***" : null, // Don't log actual token
+        meta: {
+          isTimeOut,
+          totalQuestions: questions.length,
+          answeredQuestions: Array.from(answers.keys()).length,
+        },
+      });
+
+      // Create payload with refresh token if available
+      const submitPayload = {
+        answers: answersPayload,
+        timeTakenSeconds,
+        meta: {
+          isTimeOut,
+          totalQuestions: questions.length,
+          answeredQuestions: Array.from(answers.keys()).length,
+        },
+        ...(refreshToken && { refreshToken }), // Add refresh token if available
+      };
+
+      // Try direct API call first, then fallback to Redux if needed
+      let result;
+      try {
+        result = await submitQuizApi(quizId, submitPayload);
+      } catch (apiError: any) {
+        console.log("Direct API failed, trying Redux RTK Query...");
+        // Fallback to Redux RTK Query
+        result = await submitQuiz({
+          id: quizId,
+          payload: submitPayload,
+        }).unwrap();
+        // Wrap in data structure to match expected format
+        result = { data: result };
+      }
+
+      console.log("Submit quiz result:", result?.data);
+
+      try {
+        console.log("DoQuizScreen - Full result object:", result);
+        console.log("DoQuizScreen - result type:", typeof result);
+        console.log("DoQuizScreen - result is null?", result === null);
+        console.log("DoQuizScreen - result is undefined?", result === undefined);
+      } catch (logError) {
+        console.log("DoQuizScreen - Error logging result:", logError);
+      }
+
+      // Handle successful submission
       setIsSubmitting(false);
+
+      // Navigate to results screen with the actual result data
+      // Check if result.data has nested data structure
+      console.log("DoQuizScreen - About to extract resultData");
+      const resultData = result.data?.data || result.data;
+      console.log("DoQuizScreen - Extracted resultData:", resultData);
+      console.log("DoQuizScreen - quizId before navigation:", quizId);
+
+      console.log("DoQuizScreen - Navigating to QuizResult with quizId:", quizId);
+
+      // TODO: Update quiz completion status after successful quiz submission
+      // Currently commented out due to API endpoint mismatch (quiz vs lesson)
+      // if (courseId && quizId) {
+      //   try {
+      //     await updateLessonCompletionStatusApi(courseId, quizId, true);
+      //     console.log("Quiz completion status updated successfully on server.");
+      //   } catch (progressError) {
+      //     console.error("Error updating quiz completion status:", progressError);
+      //     // Don't block navigation if progress update fails
+      //   }
+      // }
+
+      navigation.navigate("QuizResult", {
+        result: resultData,
+        quizName: "Quiz Results",
+        isTimeOut,
+        quizId,
+      });
+
+    } catch (error: any) {
+      setIsSubmitting(false);
+      console.error("Error submitting quiz:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+
+      // Check if it's an authentication error
+      if (error?.status === 400 && error?.data?.message?.includes("refresh token")) {
+        Alert.alert(
+          "Authentication Error",
+          "Your session has expired. Please login again.",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                // Navigate to login or refresh auth
+                navigation.goBack();
+              },
+            },
+          ]
+        );
+        return;
+      }
+
       Alert.alert(
-        "Quiz submitted",
-        isTimeOut ? "Submitted due to time out." : "Submitted successfully."
+        "Submission Error",
+        error?.data?.message || "Failed to submit quiz. Please try again.",
+        [
+          {
+            text: "Retry",
+            onPress: () => handleSubmit(isTimeOut),
+          },
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+        ]
       );
-      void payload;
-    }, 700);
+    }
   };
 
   if (loading) {
@@ -460,11 +661,11 @@ const DoQuizScreen: React.FC = () => {
         <TouchableOpacity
           onPress={goPrev}
           activeOpacity={0.9}
-          disabled={currentIdx === 0 || isSubmitting}
+          disabled={currentIdx === 0 || isSubmitting || isSubmittingQuiz}
           style={[
             styles.navBtn,
             styles.navBtnGhost,
-            (currentIdx === 0 || isSubmitting) && styles.navBtnDisabled,
+            (currentIdx === 0 || isSubmitting || isSubmittingQuiz) && styles.navBtnDisabled,
           ]}
         >
           <Text style={[styles.navBtnGhostText]}>Previous</Text>
@@ -474,16 +675,29 @@ const DoQuizScreen: React.FC = () => {
       </View>
 
       <View style={[styles.bottomBar, { paddingTop: 0 }]}>
-        <TouchableOpacity
-          onPress={() => handleSubmit(false)}
-          activeOpacity={0.9}
-          disabled={isSubmitting}
-          style={[styles.submitBtn, isSubmitting && styles.submitBtnDisabled]}
-        >
-          <Text style={styles.submitText}>
-            {isSubmitting ? "Submitting…" : "Submit"}
-          </Text>
-        </TouchableOpacity>
+        {currentIdx === questions.length - 1 ? (
+          // Show Submit button on last question
+          <TouchableOpacity
+            onPress={() => handleSubmit(false)}
+            activeOpacity={0.9}
+            disabled={isSubmitting || isSubmittingQuiz}
+            style={[styles.submitBtn, (isSubmitting || isSubmittingQuiz) && styles.submitBtnDisabled]}
+          >
+            <Text style={styles.submitText}>
+              {(isSubmitting || isSubmittingQuiz) ? "Submitting…" : "Submit Quiz"}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          // Show Next Question button on other questions
+          <TouchableOpacity
+            onPress={goNext}
+            activeOpacity={0.9}
+            disabled={isSubmitting || isSubmittingQuiz}
+            style={[styles.submitBtn, (isSubmitting || isSubmittingQuiz) && styles.submitBtnDisabled]}
+          >
+            <Text style={styles.submitText}>Next Question</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );

@@ -267,10 +267,37 @@ const WatchCourseScreen = ({ route }: WatchCourseScreenProps) => {
         return;
       }
 
-      // Đơn giản hóa logic, chỉ cần truyền quizId
-      // DoQuizScreen sẽ tự fetch questions
+      // Find the quiz data from course sections
+      // Try to find in lessons first, then in quizzes
+      let quizData: any = course?.sections?.flatMap((section: any) => section.lessons || [])
+        .find((lesson: any) => lesson._id === quizId);
+
+      // If not found in lessons, try to find in quizzes
+      if (!quizData) {
+        quizData = course?.sections?.flatMap((section: any) => section.quizzes || [])
+          .find((quiz: any) => quiz._id === quizId);
+      }
+
+      // If still not found, create a basic quiz data object
+      if (!quizData) {
+        quizData = {
+          _id: quizId,
+          isCompleted: false,
+          attempts: 0,
+          bestScore: null,
+          // Add other default properties as needed
+        };
+      }
+
       console.log(`Navigating to DoQuizScreen with quizId: ${quizId}`);
-      navigation.navigate("DoQuiz", { quizId });
+      console.log("Quiz data:", quizData);
+      console.log("Course sections:", course?.sections);
+
+      navigation.navigate("DoQuiz", {
+        quizId,
+        courseData: quizData,
+        courseId: courseId // Add courseId for progress update
+      });
     },
     [navigation]
   );

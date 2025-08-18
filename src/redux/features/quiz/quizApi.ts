@@ -57,7 +57,14 @@ export const quizApi = createApi({
   reducerPath: "quizApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${SERVER}/quizzes`,
-    // ❌ bỏ hẳn credentials và prepareHeaders
+    credentials: 'include', // Include cookies for refresh token
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as RootState).auth.token;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
   }),
   tagTypes: ["Quiz"],
   endpoints: (builder) => ({

@@ -23,6 +23,8 @@ import { useAuth } from "../context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
 import WatchCourseScreen from "@/screens/watch-course/WatchCourseScreen";
 import DoQuizScreen from "@/screens/watch-course/DoQuizScreen";
+import QuizResultScreen from "@/screens/watch-course/QuizResultScreen";
+import QuizDetailScreen from "@/screens/watch-course/QuizDetailScreen";
 
 // --- Define data types ---
 type AuthStackParamList = {
@@ -42,6 +44,17 @@ type CoursesStackParamList = {
   CourseDetail: { courseId: string };
   WatchCourse: { courseId: string };
   DoQuiz: { quizId: string };
+  QuizResult: {
+    result: any;
+    quizName?: string;
+    isTimeOut?: boolean;
+    quizId?: string;
+  };
+  QuizDetail: {
+    result: any;
+    quizName?: string;
+    quizId?: string;
+  };
 };
 
 type LectureStackParamList = {
@@ -104,6 +117,16 @@ function CoursesStack() {
         name="DoQuiz"
         component={DoQuizScreen}
         options={{ title: "Do Quiz" }}
+      />
+      <CoursesStackNavigator.Screen
+        name="QuizResult"
+        component={QuizResultScreen}
+        options={{ title: "Quiz Results" }}
+      />
+      <CoursesStackNavigator.Screen
+        name="QuizDetail"
+        component={QuizDetailScreen}
+        options={{ title: "Quiz Details", headerShown: false }}
       />
     </CoursesStackNavigator.Navigator>
   );
