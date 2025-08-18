@@ -54,3 +54,5 @@ Thumbs.db
 *.bak
 *.swp
 
+.env
+.env-example
