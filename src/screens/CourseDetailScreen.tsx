@@ -67,7 +67,7 @@ const CourseContentSection = ({
   index: number;
 }) => {
   const [isExpanded, setIsExpanded] = useState(index === 0);
-  const totalLectures = section.lessons.length;
+  const totalLectures = section.lessons?.length ?? 0;
 
   return (
     <View style={styles.accordionContainer}>
@@ -90,7 +90,7 @@ const CourseContentSection = ({
 
       {isExpanded && (
         <View style={styles.lectureList}>
-          {section.lessons.map((lesson, lectureIndex) => (
+          {(section.lessons ?? []).map((lesson, lectureIndex) => (
             <View key={lesson._id} style={styles.lectureItem}>
               <View style={styles.lectureNumber}>
                 <Text style={styles.lectureNumberText}>{lectureIndex + 1}</Text>
@@ -205,7 +205,7 @@ export default function CourseDetailScreen({ route }: Props) {
           <Text style={styles.description}>{course.description}</Text>
 
           <Text style={styles.sectionTitle}>What you'll learn</Text>
-          {course.topics.map((item, index) => (
+          {(course.topics ?? []).map((item, index) => (
             <View key={index} style={styles.includeItem}>
               <Icon name="checkmark-circle-outline" size={18} color="#3858F8" />
               <Text style={styles.includeText}>{item}</Text>
@@ -215,7 +215,7 @@ export default function CourseDetailScreen({ route }: Props) {
           <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
             Course Content
           </Text>
-          {course.sections.map((section, index) => (
+          {(course.sections ?? []).map((section, index) => (
             <CourseContentSection
               key={section._id}
               section={section}
