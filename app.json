@@ -1,8 +1,30 @@
 {
   "name": "main",
   "displayName": "NeuroLearn",
+  "icon": "./assets/icon.png",
+  "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
   "plugins": [
     "expo-router",
     "expo-video"
-  ]
+  ],
+  "extra": {
+    "router": {},
+    "eas": {
+      "projectId": "241eb37c-7b02-4ea7-867b-35667dd04561"
+    }
+  },
+  "expo": {
+    "android": {
+      "package": "com.punhe.main"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "34784ca4-e571-4172-819e-7dc76ca8f062"
+      }
+    }
+  }
 }
